@@ -33,11 +33,12 @@
             background-color: var(--bg-main);
             color: var(--text-heading);
             -webkit-tap-highlight-color: transparent;
-            padding-bottom: calc(80px + var(--safe-bottom));
+            padding-bottom: calc(100px + var(--safe-bottom));
             overscroll-behavior-y: none; 
         }
         .pt-safe { padding-top: calc(var(--safe-top) + 20px); } 
         .pb-safe { padding-bottom: calc(100px + var(--safe-bottom)); }
+        .nav-safe { padding-bottom: calc(var(--safe-bottom) + 12px); }
         
         /* Dynamic Gradients based on Car Color */
         .grad-teal { background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%); }
@@ -704,26 +705,42 @@ END:VCALENDAR`;
                 `;
             },
             
-            renderFilterHeader(page, filter) {
+            renderFilterHeader(page, filter, isColorBg = false) {
                 const isYear = filter.mode === 'year';
                 const isMonth = filter.mode === 'month';
                 const availableYears = utils.getAvailableYears();
                 
+                const inputClass = isColorBg 
+                    ? 'bg-white/20 backdrop-blur-md text-white placeholder-white/70' 
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border theme-border';
+                
+                const containerClass = isColorBg 
+                    ? 'bg-black/10 backdrop-blur-md' 
+                    : 'bg-slate-100 dark:bg-slate-800 border theme-border';
+
+                const activeBtnClass = isColorBg
+                    ? 'bg-white text-teal-700 shadow-sm'
+                    : 'bg-white dark:bg-slate-600 text-teal-600 shadow-sm border theme-border';
+                
+                const inactiveBtnClass = isColorBg
+                    ? 'text-white/80 hover:bg-white/10'
+                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700';
+
                 return `
                     <div class="flex items-center justify-end gap-2 mb-4 w-full">
                         <div class="flex-1 flex items-center gap-2">
-                             ${isMonth ? `<input type="month" value="${filter.value}" onchange="ui.setFilter('${page}', 'month', this.value)" class="text-sm p-1 rounded bg-white/20 backdrop-blur-md font-medium text-white outline-none focus:bg-white/30">` : ''}
+                             ${isMonth ? `<input type="month" value="${filter.value}" onchange="ui.setFilter('${page}', 'month', this.value)" class="text-sm p-1 rounded font-medium outline-none ${inputClass}">` : ''}
                              ${isYear ? `
-                                <select onchange="ui.setFilter('${page}', 'year', this.value)" class="text-sm p-1 rounded bg-white/20 backdrop-blur-md font-medium text-white outline-none focus:bg-white/30 appearance-none pl-2 pr-6 relative">
+                                <select onchange="ui.setFilter('${page}', 'year', this.value)" class="text-sm p-1 rounded font-medium outline-none appearance-none pl-2 pr-6 relative ${inputClass}">
                                     ${availableYears.map(y => `<option value="${y}" ${y == filter.value ? 'selected' : ''} class="text-black">${y}</option>`).join('')}
                                 </select>
                             ` : ''}
                         </div>
                         
-                        <div class="flex bg-black/10 backdrop-blur-md rounded-lg p-1 shrink-0">
-                            <button onclick="ui.setFilter('${page}', 'month')" class="px-3 py-1 rounded-md text-xs font-medium transition-all ${filter.mode === 'month' ? 'bg-white text-teal-700 shadow-sm' : 'text-white/80 hover:bg-white/10'}">${utils.t('range_month')}</button>
-                            <button onclick="ui.setFilter('${page}', 'year')" class="px-3 py-1 rounded-md text-xs font-medium transition-all ${filter.mode === 'year' ? 'bg-white text-teal-700 shadow-sm' : 'text-white/80 hover:bg-white/10'}">${utils.t('range_year')}</button>
-                            <button onclick="ui.setFilter('${page}', 'all')" class="px-3 py-1 rounded-md text-xs font-medium transition-all ${filter.mode === 'all' ? 'bg-white text-teal-700 shadow-sm' : 'text-white/80 hover:bg-white/10'}">${utils.t('range_all')}</button>
+                        <div class="flex rounded-lg p-1 shrink-0 ${containerClass}">
+                            <button onclick="ui.setFilter('${page}', 'month')" class="px-3 py-1 rounded-md text-xs font-medium transition-all ${filter.mode === 'month' ? activeBtnClass : inactiveBtnClass}">${utils.t('range_month')}</button>
+                            <button onclick="ui.setFilter('${page}', 'year')" class="px-3 py-1 rounded-md text-xs font-medium transition-all ${filter.mode === 'year' ? activeBtnClass : inactiveBtnClass}">${utils.t('range_year')}</button>
+                            <button onclick="ui.setFilter('${page}', 'all')" class="px-3 py-1 rounded-md text-xs font-medium transition-all ${filter.mode === 'all' ? activeBtnClass : inactiveBtnClass}">${utils.t('range_all')}</button>
                         </div>
                     </div>
                 `;
@@ -856,7 +873,7 @@ END:VCALENDAR`;
                                         </button>
                                     </div>
                                 </div>
-                                ${this.renderFilterHeader('dashboard', filter)}
+                                ${this.renderFilterHeader('dashboard', filter, true)}
                              </div>
                         </div>
 
@@ -944,7 +961,7 @@ END:VCALENDAR`;
                         <div class="space-y-3 pb-24">
                             ${filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`}
                         </div>
-                        <button onclick="ui.openAddFuel()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full grad-teal text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
+                        <button onclick="ui.openAddFuel()" class="fixed bottom-[calc(80px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full grad-teal text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
                             <span class="material-icons">add</span>
                         </button>
                     </div>
@@ -992,7 +1009,7 @@ END:VCALENDAR`;
                         <div class="space-y-3 pb-24">
                             ${filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`}
                         </div>
-                        <button onclick="ui.openAddService()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-white dark:bg-slate-700 theme-text-heading shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50 border theme-border">
+                        <button onclick="ui.openAddService()" class="fixed bottom-[calc(80px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-white dark:bg-slate-700 theme-text-heading shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50 border theme-border">
                             <span class="material-icons">add</span>
                         </button>
                     </div>
@@ -1020,7 +1037,7 @@ END:VCALENDAR`;
                         <div class="space-y-3 pb-24">
                             ${filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records yet</div>`}
                         </div>
-                        <button onclick="ui.openAddParking()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
+                        <button onclick="ui.openAddParking()" class="fixed bottom-[calc(80px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
                             <span class="material-icons">add</span>
                         </button>
                      </div>
@@ -1341,7 +1358,7 @@ END:VCALENDAR`;
                     { id: 'settings', icon: 'settings', label: utils.t('settings') }
                 ];
                 return `
-                    <div class="fixed bottom-0 left-0 w-full glass-nav pb-safe z-40">
+                    <div class="fixed bottom-0 left-0 w-full glass-nav nav-safe z-40">
                         <div class="flex justify-around items-center pt-2">
                             ${nav.map(n => `
                                 <button onclick="router.navigate('${n.id}')" class="flex flex-col items-center p-2 w-full transition-colors ${active === n.id ? 'text-teal-600' : 'text-slate-400'}">
