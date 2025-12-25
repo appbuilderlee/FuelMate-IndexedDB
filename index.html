@@ -6,11 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f766e">
-    <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
     <title>FuelMate</title>
-    <link rel="stylesheet" href="/app.css">
-    <link rel="stylesheet" href="/material-icons/material-icons.css">
+    <link rel="stylesheet" href="./app.css">
+    <link rel="stylesheet" href="./material-icons/material-icons.css">
     <style>
         :root {
             --safe-top: env(safe-area-inset-top, 20px);
@@ -2688,7 +2688,7 @@ END:VCALENDAR`;
         
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.error('Service Worker registration failed', err));
+                navigator.serviceWorker.register('./sw.js').catch(err => console.error('Service Worker registration failed', err));
             });
         }
     </script>

@@ -1,15 +1,20 @@
 /* FuelMate Service Worker - app-shell cache for offline install */
-const CACHE_NAME = 'fuelmate-cache-v3';
+const CACHE_NAME = 'fuelmate-cache-v4';
+
+function urlFor(path) {
+  return new URL(path, self.registration.scope).toString();
+}
+
 const CORE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icon.svg',
-  '/sw.js',
-  '/app.css',
-  '/material-icons/material-icons.css',
-  '/material-icons/material-icons.woff2',
-  '/material-icons/material-icons.woff',
+  urlFor('./'),
+  urlFor('index.html'),
+  urlFor('manifest.webmanifest'),
+  urlFor('icon.svg'),
+  urlFor('sw.js'),
+  urlFor('app.css'),
+  urlFor('material-icons/material-icons.css'),
+  urlFor('material-icons/material-icons.woff2'),
+  urlFor('material-icons/material-icons.woff'),
 ];
 
 function extractSameOriginAssetPaths(htmlText) {
@@ -64,6 +69,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   const isSameOrigin = url.origin === self.location.origin;
+  const indexUrl = urlFor('index.html');
 
   // SPA-style navigation fallback to cached shell.
   if (request.mode === 'navigate') {
@@ -72,10 +78,10 @@ self.addEventListener('fetch', (event) => {
         try {
           const response = await fetch(request);
           const cache = await caches.open(CACHE_NAME);
-          cache.put('/index.html', response.clone());
+          cache.put(indexUrl, response.clone());
           return response;
         } catch {
-          return (await caches.match('/index.html')) || Response.error();
+          return (await caches.match(indexUrl)) || Response.error();
         }
       })(),
     );
@@ -96,7 +102,7 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       } catch {
-        if (isSameOrigin) return (await caches.match('/index.html')) || Response.error();
+        if (isSameOrigin) return (await caches.match(indexUrl)) || Response.error();
         return Response.error();
       }
     })(),
