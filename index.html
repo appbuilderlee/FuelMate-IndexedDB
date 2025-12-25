@@ -521,7 +521,7 @@
                     .sort((a, b) => (a.odo - b.odo) || (a.dateMs - b.dateMs));
 
                 const posToTireId = new Map(utils.getTirePositions().map(p => [p, `init:${vehicle?.id}:${p}`]));
-                const tireLastReplace = new Map(); // tireId -> { odo, dateMs }
+                const tireLastReplace = new Map(); // tireId -> { odo, dateMs, logId }
 
                 for (const { log, odo, dateMs } of events) {
                     if (log.type === 'tire_replace') {
@@ -529,7 +529,7 @@
                         if (!pos) continue;
                         const tireId = log.tireId || `rep:${log.id}`;
                         posToTireId.set(pos, tireId);
-                        tireLastReplace.set(tireId, { odo, dateMs });
+                        tireLastReplace.set(tireId, { odo, dateMs, logId: log.id });
                     } else if (log.type === 'tire_rotation') {
                         const a = log.tireSwapA;
                         const b = log.tireSwapB;
@@ -546,7 +546,7 @@
                     const tireId = posToTireId.get(pos);
                     const latest = tireId ? tireLastReplace.get(tireId) : null;
                     if (!latest) {
-                        return { pos, isOverdue: false, primary: utils.t('tire_not_set'), secondary: '' };
+                        return { pos, editLogId: null, isOverdue: false, primary: utils.t('tire_not_set'), secondary: '' };
                     }
 
                     const lastOdo = latest.odo;
@@ -579,7 +579,7 @@
                     if (!isOverdue && timeText && primaryIsDist) secondaryParts.push(timeText);
                     const secondary = secondaryParts.length ? `${utils.t('due_in')} ${secondaryParts.join(' / ')}` : '';
 
-                    return { pos, isOverdue, primary, secondary };
+                    return { pos, editLogId: latest.logId || null, isOverdue, primary, secondary };
                 });
             },
             
@@ -1114,7 +1114,7 @@ END:VCALENDAR`;
                                 </div>
                                 <div class="grid grid-cols-2 gap-3 mt-3">
                                     ${tireStatuses.map(s => `
-                                        <button onclick="ui.openAddService(null,'tire_replace'); setTimeout(() => { const el=document.getElementById('l_tire_pos'); if (el) el.value='${s.pos}'; }, 60);" class="text-left p-3 rounded-xl border theme-border bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition">
+                                        <button onclick="${s.editLogId ? `ui.openAddService('${s.editLogId}')` : `ui.openAddService(null,'tire_replace'); setTimeout(() => { const el=document.getElementById('l_tire_pos'); if (el) el.value='${s.pos}'; }, 60);`}" class="text-left p-3 rounded-xl border theme-border bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition">
                                             <div class="text-xs theme-text-sub font-bold">${utils.t('tire_' + s.pos)}</div>
                                             <div class="text-sm font-black ${s.isOverdue ? 'text-red-600' : 'theme-text-heading'}">${s.primary}</div>
                                             <div class="text-[10px] theme-text-sub">${s.secondary || '&nbsp;'}</div>
