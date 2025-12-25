@@ -2009,7 +2009,7 @@ END:VCALENDAR`;
                         <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 card-shadow mb-6">
                              <div class="flex items-center justify-between mb-4">
                                  <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">${utils.t('reminder_settings')}</div>
-                                 <button onclick="router.navigate('reminders')" class="text-[10px] font-bold text-slate-400 underline">${utils.t('reminder_center')}</button>
+                                 <button onclick="router.navigate('reminders')" class="text-xs font-bold text-slate-500 underline">${utils.t('reminder_center')}</button>
                              </div>
                              ${['license','insurance','registration'].map(type => {
                                  const conf = settings.reminders?.[type] || { enabled: true, days: 30 };
