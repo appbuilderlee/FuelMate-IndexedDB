@@ -1,12 +1,38 @@
 /* FuelMate Service Worker - app-shell cache for offline install */
-const CACHE_NAME = 'fuelmate-cache-v1';
-const CORE_ASSETS = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg'];
+const CACHE_NAME = 'fuelmate-cache-v2';
+const CORE_ASSETS = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg', '/sw.js'];
+
+function extractSameOriginAssetPaths(htmlText) {
+  const matches = htmlText.matchAll(/\b(?:href|src)\s*=\s*"(\/[^"#?]+)"/g);
+  const paths = new Set();
+  for (const m of matches) {
+    const p = m[1];
+    if (!p) continue;
+    if (p.startsWith('//')) continue;
+    if (p.startsWith('/@')) continue;
+    paths.add(p);
+  }
+  return Array.from(paths);
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       await cache.addAll(CORE_ASSETS);
+
+      // Best-effort: cache same-origin assets referenced by the current HTML (works for hashed Vite assets too).
+      try {
+        const res = await fetch('/index.html', { cache: 'no-store' });
+        if (res.ok) {
+          const html = await res.text();
+          const assets = extractSameOriginAssetPaths(html);
+          await cache.addAll(assets);
+        }
+      } catch {
+        // ignore
+      }
+
       self.skipWaiting();
     })(),
   );
@@ -66,4 +92,3 @@ self.addEventListener('fetch', (event) => {
     })(),
   );
 });
-

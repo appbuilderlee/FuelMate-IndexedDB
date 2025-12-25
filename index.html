@@ -9,8 +9,8 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <title>FuelMate</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/src/main.css">
+    <link rel="stylesheet" href="/material-icons/material-icons.css">
     <style>
         :root {
             --safe-top: env(safe-area-inset-top, 20px);
@@ -607,7 +607,10 @@
                 if (!logs.length) return { efficiency: '--', costKm: '--', totalCost: 0, totalDist: 0 };
                 
                 // 1. Total Cost
-                const totalCost = logs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
+                const totalCost = logs.reduce((sum, l) => {
+                    const c = parseFloat(l.cost);
+                    return sum + (Number.isFinite(c) ? c : 0);
+                }, 0);
                 
                 // 2. Total Distance
                 const sorted = [...logs].sort((a, b) => parseFloat(a.odometer) - parseFloat(b.odometer));
@@ -744,8 +747,8 @@
                 
                 const data = months.map(m => {
                     const monthLogs = logs.filter(l => l.date.startsWith(m));
-                    const fuel = monthLogs.filter(l => l.type === 'fuel').reduce((sum, l) => sum + parseFloat(l.cost), 0);
-                    const service = monthLogs.filter(l => l.type !== 'fuel').reduce((sum, l) => sum + parseFloat(l.cost), 0);
+                    const fuel = monthLogs.filter(l => l.type === 'fuel').reduce((sum, l) => sum + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
+                    const service = monthLogs.filter(l => l.type !== 'fuel').reduce((sum, l) => sum + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
                     return { month: m, fuel, service };
                 });
                 
@@ -784,7 +787,7 @@
             exportCSV() {
                 const logs = store.getVehicleLogs();
                 const fuelUnit = utils.getFuelUnit();
-                const rows = [['Date', 'Type', 'Odometer', 'Cost', 'Details']];
+                const rows = [['Date', 'Type', `Odometer (${utils.getDistUnit()})`, `Cost (${store.data.settings.currency})`, 'Details']];
                 logs.forEach(l => {
                     let details = l.notes || '';
                     if (l.type === 'fuel') {
@@ -1272,14 +1275,14 @@ END:VCALENDAR`;
                 const filter = store.pageFilters.analytics;
                 const filteredLogs = utils.filterLogs(logs, filter);
                 
-                const fuelCost = filteredLogs.filter(l => l.type === 'fuel').reduce((s,l) => s + parseFloat(l.cost), 0);
-                const serviceCost = filteredLogs.filter(l => !['fuel','parking','fine'].includes(l.type)).reduce((s,l) => s + parseFloat(l.cost), 0);
-                const parkingCost = filteredLogs.filter(l => l.type === 'parking').reduce((s,l) => s + parseFloat(l.cost), 0);
-                const fineCost = filteredLogs.filter(l => l.type === 'fine').reduce((s,l) => s + parseFloat(l.cost), 0);
+                const fuelCost = filteredLogs.filter(l => l.type === 'fuel').reduce((s,l) => s + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
+                const serviceCost = filteredLogs.filter(l => !['fuel','parking','fine'].includes(l.type)).reduce((s,l) => s + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
+                const parkingCost = filteredLogs.filter(l => l.type === 'parking').reduce((s,l) => s + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
+                const fineCost = filteredLogs.filter(l => l.type === 'fine').reduce((s,l) => s + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
                 const total = fuelCost + serviceCost + parkingCost + fineCost;
                 
                 const fixedLogs = filteredLogs.filter(l => ['license', 'insurance', 'registration'].includes(l.type));
-                const fixedTotal = fixedLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
+                const fixedTotal = fixedLogs.reduce((sum, l) => sum + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
                 
                 let pieHtml = '';
                 if (total > 0) {
@@ -1776,6 +1779,8 @@ END:VCALENDAR`;
 
             openAddFuel(id = null) {
                 const log = id ? store.data.logs.find(l => l.id === id) : { date: new Date().toISOString().slice(0, 10), odometer: store.getActiveVehicle()?.currentOdometer || '', liters: '', cost: '', location: '', notes: '', isPartial: false };
+                const fuelUnit = utils.getFuelUnit();
+                const volLabel = fuelUnit === 'kWh' ? utils.t('kwh') : (fuelUnit === 'Gal' ? utils.t('gallons') : utils.t('liters'));
                 
                 this.openModal(`
                     <h2 class="text-xl font-bold mb-4 theme-text-heading flex items-center gap-2"><span class="material-icons text-teal-600">local_gas_station</span> ${utils.t('add_fuel')}</h2>
@@ -1791,7 +1796,7 @@ END:VCALENDAR`;
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <div><label class="text-xs theme-text-sub block mb-1">${utils.t('liters')}</label><input id="l_liters" type="number" step="0.01" value="${log.liters}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('vol')"></div>
+                            <div><label class="text-xs theme-text-sub block mb-1">${volLabel}</label><input id="l_liters" type="number" step="0.01" value="${log.liters}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('vol')"></div>
                             <div><label class="text-xs theme-text-sub block mb-1">${utils.t('price_unit')}</label><input id="l_price" type="number" step="0.01" class="w-full p-3 rounded-xl bg-slate-50" oninput="ui.calcFuel('price')"></div>
                         </div>
                         <div><label class="text-xs theme-text-sub block mb-1">${utils.t('cost')}</label><input id="l_cost" type="number" step="0.01" value="${log.cost}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('cost')"></div>
