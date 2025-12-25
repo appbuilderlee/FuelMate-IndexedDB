@@ -1,6 +1,16 @@
 /* FuelMate Service Worker - app-shell cache for offline install */
-const CACHE_NAME = 'fuelmate-cache-v2';
-const CORE_ASSETS = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg', '/sw.js'];
+const CACHE_NAME = 'fuelmate-cache-v3';
+const CORE_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
+  '/icon.svg',
+  '/sw.js',
+  '/app.css',
+  '/material-icons/material-icons.css',
+  '/material-icons/material-icons.woff2',
+  '/material-icons/material-icons.woff',
+];
 
 function extractSameOriginAssetPaths(htmlText) {
   const matches = htmlText.matchAll(/\b(?:href|src)\s*=\s*"(\/[^"#?]+)"/g);
