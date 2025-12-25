@@ -6,7 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f766e">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
     <title>FuelMate</title>
+    <link rel="stylesheet" href="./app.css">
+    <link rel="stylesheet" href="./material-icons/material-icons.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -110,23 +114,6 @@
             link.rel = 'apple-touch-icon';
             link.href = url;
             document.head.appendChild(link);
-            
-            // Dynamic Manifest
-            const manifest = {
-                name: "FuelMate",
-                short_name: "FuelMate",
-                start_url: ".",
-                display: "standalone",
-                background_color: "#0f766e",
-                theme_color: "#0f766e",
-                icons: [{ src: url, sizes: "1024x1024", type: "image/png" }]
-            };
-            const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-            const manifestUrl = URL.createObjectURL(blob);
-            const linkManifest = document.createElement('link');
-            linkManifest.rel = 'manifest';
-            linkManifest.href = manifestUrl;
-            document.head.appendChild(linkManifest);
         })();
     </script>
 </head>
@@ -152,22 +139,75 @@
                 date: 'Date', odometer: 'Odometer', liters: 'Liters', gallons: 'Gallons', cost: 'Cost', price_unit: 'Price/Unit', location: 'Location', notes: 'Notes',
                 detect_loc: 'Detect Location', save: 'Save', cancel: 'Cancel', delete: 'Delete',
                 service_type: 'Service Type', service: 'Service', repair: 'Repair', parking_fee: 'Parking Fee', traffic_fine: 'Traffic Fine',
+                tire_replace: 'Tire Replacement',
+                tire_rotation: 'Tire Rotation',
                 license: 'License Renewal', insurance: 'Insurance Renewal', registration: 'Vehicle Registration',
                 periodic_maintenance: 'Periodic Maintenance', car_wash: 'Car Wash', car_accessories: 'Accessories',
+                tire_positions: 'Tire Positions',
+                tire_pos: 'Position',
+                tire_front_left: 'Front Left', tire_front_right: 'Front Right', tire_rear_left: 'Rear Left', tire_rear_right: 'Rear Right',
+                tire_brand: 'Brand/Model',
+                tire_swap: 'Swap Positions',
+                tire_swap_a: 'From',
+                tire_swap_b: 'To',
+                drive_type: 'Drive Type',
+                drive_fwd: 'FWD',
+                drive_rwd: 'RWD',
+                drive_awd: 'AWD/4WD',
+                tire_tread: 'Tread Depth (mm)',
+                tire_pressure: 'Pressure (psi)',
+                pressure_unit: 'Pressure Unit',
+                unit_psi: 'psi',
+                unit_kpa: 'kPa',
+                unit_bar: 'bar',
+                tire_alignment: 'Alignment',
+                tire_balancing: 'Balancing',
+                tire_recommended: 'Recommended',
+                next_tire_change: 'Next Tire Change',
+                tire_not_set: 'Not set',
+                due_in: 'Due in',
+                overdue: 'Overdue',
+                tire_interval_dist: 'Tire Interval (Distance)',
+                tire_interval_time: 'Tire Interval (Years)',
                 license_expiry: 'License Expiry', insurance_expiry: 'Insurance Expiry', expiring_soon: 'Expiring in', expired: 'Expired',
                 reminders: 'Reminders', reminder_settings: 'Reminder Settings',
+                reminder_center: 'Reminder Center',
+                view_all: 'View All',
+                snooze_7d: 'Snooze 7d',
+                snooze_1d: 'Snooze 1d',
+                snooze_30d: 'Snooze 30d',
+                tab_active: 'Active',
+                tab_snoozed: 'Snoozed',
+                tab_done: 'Done',
+                unsnooze: 'Unsnooze',
+                restore: 'Restore',
+                mark_done: 'Done',
+                load_more: 'Load more',
+                showing: 'Showing',
                 export_json: 'Backup Data (JSON)', import_json: 'Restore Data (JSON)', export_csv: 'Export Excel (CSV)',
                 clear_history: 'Clear Vehicle History', delete_vehicle: 'Delete Vehicle',
                 confirm_delete: 'Are you sure you want to delete this record?',
                 confirm_clear: 'WARNING: This will delete ALL logs for this vehicle. Are you sure?',
                 confirm_clear_2: 'Double Check: This cannot be undone. Delete everything?',
                 import_warn: 'WARNING: This will overwrite your current data. Continue?',
+                import_summary: 'Import Summary',
+                import_file: 'File',
+                import_current: 'Current',
+                import_incoming: 'Incoming',
+                import_counts: 'Counts',
+                import_types: 'Types',
+                import_settings: 'Settings',
+                import_invalid: 'Invalid backup file.',
+                import_autobackup: 'Auto-backup downloaded:',
+                import_overwrite: 'Backup & Overwrite',
                 units: 'Units', currency: 'Currency', language: 'Language',
                 metric: 'Metric (L, km)', imperial: 'Imperial (Gal, mi)',
                 success_import: 'Data imported successfully!', err_file: 'Invalid file format',
                 partial_tank: 'Partial Tank / Missed Fill-up',
-                common_services: 'Common Services', oil_change: 'Oil Change', tire_change: 'Tire Change', battery: 'Battery', brake: 'Brakes', inspection: 'Inspection',
-                fine_types: 'Fine Types', parking_ticket: 'Parking Ticket', speeding: 'Speeding', red_light: 'Red Light', illegal_turn: 'Illegal Turn',
+                partial: 'Partial',
+                full: 'Full',
+                common_services: 'Common Services', oil_change: 'Oil Change', tire_change: 'Tire Change', tire_rotation: 'Tire Rotation', alignment: 'Wheel Alignment', air_filter: 'Air Filter', cabin_filter: 'Cabin Filter', spark_plugs: 'Spark Plugs', brake_fluid: 'Brake Fluid', transmission_fluid: 'Transmission Fluid', coolant: 'Coolant', wiper_blades: 'Wiper Blades', battery: 'Battery', brake: 'Brakes', inspection: 'Inspection',
+                fine_types: 'Fine Types', parking_ticket: 'Parking Ticket', no_parking: 'No Parking', speeding: 'Speeding', red_light: 'Red Light', illegal_turn: 'Illegal Turn', bus_lane: 'Bus Lane', seatbelt: 'Seat Belt', phone_use: 'Phone Use', toll: 'Toll / Fee',
                 service_interval: 'Service Interval', int_none: 'None', int_5k: '5,000 km', int_10k: '10,000 km', int_6m: '6 Months', int_1yr: '1 Year',
                 service_interval_dist: 'Interval (Distance)', service_interval_time: 'Interval (Time)',
                 due_service: 'Service Due', due_in: 'Due in',
@@ -178,6 +218,7 @@
                 type_sedan: 'Sedan', type_suv: 'SUV', type_bike: 'Motorcycle', type_truck: 'Truck', type_sports: 'Sports Car', type_van: 'Van', type_bus: 'Bus',
                 about: 'About FuelMate', app_desc: 'A complete PWA for vehicle tracking.',
                 backup_needed: 'Backup Needed', backup_desc: 'You haven\'t backed up in 30 days.', backup_now: 'Backup Now', backup_later: 'Later',
+                add_demo_car: 'Add Demo Car',
                 trip_dist: 'Trip Distance', total_odo: 'Total Odometer', input_mode: 'Input Mode',
                 monthly_spend: 'Monthly Spending',
                 kwh: 'kWh'
@@ -191,22 +232,75 @@
                 date: '日期', odometer: '里程', liters: '升數', gallons: '加侖', cost: '金額', price_unit: '單價', location: '地點', notes: '備註',
                 detect_loc: '定位', save: '保存', cancel: '取消', delete: '刪除',
                 service_type: '維修類型', service: '一般維修', repair: '故障維修', parking_fee: '停車費', traffic_fine: '罰單/告票',
+                tire_replace: '更換輪胎',
+                tire_rotation: '輪胎換位',
                 license: '車牌續期', insurance: '保險續期', registration: '車輛登記',
                 periodic_maintenance: '定期保養', car_wash: '洗車', car_accessories: '汽車用品',
+                tire_positions: '輪胎位置',
+                tire_pos: '位置',
+                tire_front_left: '左前', tire_front_right: '右前', tire_rear_left: '左後', tire_rear_right: '右後',
+                tire_brand: '品牌/型號',
+                tire_swap: '交換位置',
+                tire_swap_a: '由',
+                tire_swap_b: '到',
+                drive_type: '驅動方式',
+                drive_fwd: '前驅',
+                drive_rwd: '後驅',
+                drive_awd: '四驅',
+                tire_tread: '胎紋深度 (mm)',
+                tire_pressure: '胎壓',
+                pressure_unit: '氣壓單位',
+                unit_psi: 'psi',
+                unit_kpa: 'kPa',
+                unit_bar: 'bar',
+                tire_alignment: '四輪定位',
+                tire_balancing: '平衡',
+                tire_recommended: '建議',
+                next_tire_change: '下次換胎',
+                tire_not_set: '未設定',
+                due_in: '剩餘',
+                overdue: '已到期',
+                tire_interval_dist: '換胎間隔（里程）',
+                tire_interval_time: '換胎間隔（年）',
                 license_expiry: '車牌到期', insurance_expiry: '保險到期', expiring_soon: '剩餘', expired: '已過期',
                 reminders: '提醒通知', reminder_settings: '提醒設定',
+                reminder_center: '提醒中心',
+                view_all: '查看全部',
+                snooze_7d: '延後 7 天',
+                snooze_1d: '延後 1 天',
+                snooze_30d: '延後 30 天',
+                tab_active: '進行中',
+                tab_snoozed: '已延後',
+                tab_done: '已完成',
+                unsnooze: '取消延後',
+                restore: '還原',
+                mark_done: '完成',
+                load_more: '載入更多',
+                showing: '顯示',
                 export_json: '匯出資料 (JSON)', import_json: '匯入資料 (JSON)', export_csv: '匯出 Excel (CSV)',
                 clear_history: '清除所有紀錄', delete_vehicle: '刪除車輛',
                 confirm_delete: '確定要刪除此記錄嗎？',
                 confirm_clear: '警告：這將刪除此車輛的所有記錄。確定嗎？',
                 confirm_clear_2: '再次確認：刪除後無法恢復。確定要清空嗎？',
                 import_warn: '警告：這將覆蓋您當前的所有資料。是否繼續？',
+                import_summary: '匯入摘要',
+                import_file: '檔案',
+                import_current: '目前',
+                import_incoming: '將匯入',
+                import_counts: '數量',
+                import_types: '類型',
+                import_settings: '設定',
+                import_invalid: '備份檔案格式不正確。',
+                import_autobackup: '已下載自動備份：',
+                import_overwrite: '備份並覆蓋',
                 units: '單位', currency: '貨幣', language: '語言',
                 metric: '公制 (L, km)', imperial: '英制 (Gal, mi)',
                 success_import: '資料匯入成功！', err_file: '文件格式錯誤',
                 partial_tank: '未加滿 / 漏記 (不計算油耗)',
-                common_services: '常用項目', oil_change: '換機油', tire_change: '換輪胎', battery: '換電池', brake: '煞車皮', inspection: '年檢',
-                fine_types: '罰單類型', parking_ticket: '違例泊車', speeding: '超速', red_light: '衝紅燈', illegal_turn: '違規轉彎',
+                partial: '未加滿',
+                full: '加滿',
+                common_services: '常用項目', oil_change: '換機油', tire_change: '換輪胎', tire_rotation: '輪胎換位', alignment: '四輪定位', air_filter: '更換空氣濾芯', cabin_filter: '更換冷氣濾芯', spark_plugs: '更換火咀', brake_fluid: '更換煞車油', transmission_fluid: '更換波箱油', coolant: '更換冷卻液', wiper_blades: '更換雨刷', battery: '換電池', brake: '煞車皮', inspection: '年檢',
+                fine_types: '罰單類型', parking_ticket: '違例泊車', no_parking: '禁止停車', speeding: '超速', red_light: '衝紅燈', illegal_turn: '違規轉彎', bus_lane: '巴士線', seatbelt: '安全帶', phone_use: '使用手機', toll: '道路收費/費用',
                 service_interval: '保養間隔', int_none: '關閉', int_5k: '5,000 km', int_10k: '10,000 km', int_6m: '6 個月', int_1yr: '1 年',
                 service_interval_dist: '保養間隔 (里程)', service_interval_time: '保養間隔 (時間)',
                 due_service: '即將保養', due_in: '剩餘',
@@ -217,6 +311,7 @@
                 type_sedan: '房車', type_suv: '休旅車', type_bike: '機車', type_truck: '貨車', type_sports: '跑車', type_van: '廂型車', type_bus: '巴士',
                 about: '關於 FuelMate', app_desc: '全功能車輛開支追蹤 PWA。',
                 backup_needed: '備份提醒', backup_desc: '您已經超過 30 天沒有備份資料了。', backup_now: '立即備份', backup_later: '稍後',
+                add_demo_car: '加入示範車 (Demo)',
                 trip_dist: '行駛距離', total_odo: '總里程', input_mode: '輸入模式',
                 monthly_spend: '每月支出',
                 kwh: '度電 (kWh)'
@@ -227,14 +322,62 @@
         const store = {
             db: null,
             dbName: 'FuelMateDB',
-            data: { vehicles: [], logs: [], settings: { currency: '$', units: 'metric', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', reminders: {}, lastBackupDate: null } },
+            currentSchemaVersion: 2,
+            defaultSettings: { currency: '$', units: 'metric', pressureUnit: 'kPa', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, reminderCenter: { snoozedUntil: {}, done: {} }, lastBackupDate: null, activeVehicleId: null },
+            data: { vehicles: [], logs: [], settings: { currency: '$', units: 'metric', pressureUnit: 'kPa', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, reminderCenter: { snoozedUntil: {}, done: {} }, lastBackupDate: null, activeVehicleId: null } },
             pageFilters: { 
                 dashboard: { mode: 'month', value: new Date().toISOString().slice(0, 7) }, 
                 fuel: { mode: 'year', value: new Date().getFullYear().toString() }, 
                 maintenance: { mode: 'year', value: new Date().getFullYear().toString() }, 
                 parking: { mode: 'year', value: new Date().getFullYear().toString() }, 
                 analytics: { mode: 'year', value: new Date().getFullYear().toString() },
-                maintenanceSearch: ''
+                maintenanceSearch: '',
+                maintenanceTypes: [],
+                maintenanceView: 'all',
+                fuelSearch: '',
+                parkingSearch: '',
+                fuelFrom: '',
+                fuelTo: '',
+                parkingFrom: '',
+                parkingTo: '',
+                maintenanceFrom: '',
+                maintenanceTo: '',
+                fuelFlags: { full: false, partial: false },
+                parkingFlags: { withLocation: false, withNotes: false },
+                remindersTab: 'active'
+            },
+            pageLimits: { fuel: 100, maintenance: 100, parking: 100 },
+            _logsVersion: 0,
+            _cache: {
+                logsSorted: new Map(),
+                logSearchText: new Map(),
+                filtered: new Map()
+            },
+            _bulkImporting: false,
+
+            _invalidateLogsCache() {
+                this._logsVersion += 1;
+                this._cache.logsSorted.clear();
+                this._cache.logSearchText.clear();
+                this._cache.filtered.clear();
+            },
+
+            _getCachedFiltered(key, compute) {
+                const fullKey = `${this._logsVersion}|${this.data.settings.activeVehicleId || 'none'}|${key}`;
+                const cached = this._cache.filtered.get(fullKey);
+                if (cached) return cached;
+                const value = compute();
+                this._cache.filtered.set(fullKey, value);
+                return value;
+            },
+
+            getLogSearchText(log) {
+                if (!log || !log.id) return '';
+                const cached = this._cache.logSearchText.get(log.id);
+                if (cached) return cached;
+                const text = `${log.location || ''}\n${log.notes || ''}`.toLowerCase();
+                this._cache.logSearchText.set(log.id, text);
+                return text;
             },
 
             async init() {
@@ -264,9 +407,33 @@
                 return new Promise((resolve, reject) => {
                     const tx = this.db.transaction(storeName, mode);
                     const store = tx.objectStore(storeName);
-                    const request = callback(store);
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = () => reject(request.error);
+                    let request;
+                    let result;
+                    try {
+                        request = callback(store, tx);
+                    } catch (err) {
+                        reject(err);
+                        return;
+                    }
+                    if (request) {
+                        request.onsuccess = () => { result = request.result; };
+                        request.onerror = () => reject(request.error);
+                    }
+                    tx.oncomplete = () => resolve(result);
+                    tx.onerror = () => reject(tx.error || new Error('Transaction failed'));
+                    tx.onabort = () => reject(tx.error || new Error('Transaction aborted'));
+                });
+            },
+
+            async clearAllData() {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction(['vehicles', 'logs', 'settings'], 'readwrite');
+                    tx.objectStore('vehicles').clear();
+                    tx.objectStore('logs').clear();
+                    tx.objectStore('settings').clear();
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error || new Error('Clear failed'));
+                    tx.onabort = () => reject(tx.error || new Error('Clear aborted'));
                 });
             },
 
@@ -291,6 +458,62 @@
                 // Ensure default settings
                 if (!this.data.settings.activeVehicleId && this.data.vehicles.length > 0) {
                     this.data.settings.activeVehicleId = this.data.vehicles[0].id;
+                }
+                this._invalidateLogsCache();
+                await this.migrateSchemaIfNeeded();
+            },
+
+            async migrateSchemaIfNeeded() {
+                const raw = parseInt(this.data.settings.schemaVersion, 10);
+                let schemaVersion = Number.isFinite(raw) ? raw : 1;
+                let changedSettings = false;
+                let updatedLogs = [];
+
+                if (!this.data.settings.schemaVersion) {
+                    this.data.settings.schemaVersion = schemaVersion;
+                    changedSettings = true;
+                }
+
+                while (schemaVersion < this.currentSchemaVersion) {
+                    if (schemaVersion === 1) {
+                        if (!this.data.settings.pressureUnit) {
+                            this.data.settings.pressureUnit = (this.data.settings.units === 'imperial') ? 'psi' : 'kPa';
+                            changedSettings = true;
+                        }
+                        for (const log of this.data.logs) {
+                            if (log && log.type === 'tire_replace' && (log.tirePressureKpa === undefined || log.tirePressureKpa === null || log.tirePressureKpa === '') && log.tirePressure !== undefined && log.tirePressure !== null && log.tirePressure !== '') {
+                                const kpa = utils.pressureToKpa(log.tirePressure, 'psi');
+                                if (kpa !== null) {
+                                    log.tirePressureKpa = kpa.toFixed(1);
+                                    updatedLogs.push(log);
+                                }
+                            }
+                        }
+                        schemaVersion = 2;
+                        continue;
+                    }
+                    schemaVersion = this.currentSchemaVersion;
+                }
+
+                if (schemaVersion !== parseInt(this.data.settings.schemaVersion, 10)) {
+                    this.data.settings.schemaVersion = schemaVersion;
+                    changedSettings = true;
+                }
+
+                if (updatedLogs.length) {
+                    await new Promise((resolve, reject) => {
+                        const tx = this.db.transaction('logs', 'readwrite');
+                        const s = tx.objectStore('logs');
+                        for (const l of updatedLogs) s.put(l);
+                        tx.oncomplete = () => resolve();
+                        tx.onerror = () => reject(tx.error || new Error('Migration log update failed'));
+                        tx.onabort = () => reject(tx.error || new Error('Migration log update aborted'));
+                    });
+                    this._invalidateLogsCache();
+                }
+
+                if (changedSettings) {
+                    await this.saveData();
                 }
             },
 
@@ -322,6 +545,7 @@
                     this.data.settings.activeVehicleId = this.data.vehicles.length ? this.data.vehicles[0].id : null;
                     await this.saveData();
                 }
+                this._invalidateLogsCache();
                 await this.runTransaction('vehicles', 'readwrite', s => s.delete(id));
                 const tx = this.db.transaction('logs', 'readwrite');
                 const logStore = tx.objectStore('logs');
@@ -340,10 +564,13 @@
                 
                 // Auto-update vehicle odometer
                 const vehicle = this.data.vehicles.find(v => v.id === log.vehicleId);
-                if (vehicle && log.odometer > vehicle.currentOdometer) {
-                    vehicle.currentOdometer = log.odometer;
+                const odo = parseFloat(log.odometer) || 0;
+                const current = parseFloat(vehicle?.currentOdometer) || 0;
+                if (vehicle && odo > current) {
+                    vehicle.currentOdometer = odo;
                     await this.updateVehicle(vehicle);
                 }
+                if (!this._bulkImporting) this._invalidateLogsCache();
             },
 
             async updateLog(log) {
@@ -351,10 +578,12 @@
                 if (idx !== -1) {
                     this.data.logs[idx] = log;
                     await this.runTransaction('logs', 'readwrite', s => s.put(log));
+                    if (!this._bulkImporting) this._invalidateLogsCache();
                     
                     const vehicle = this.data.vehicles.find(v => v.id === log.vehicleId);
                     const maxOdo = Math.max(...this.data.logs.filter(l => l.vehicleId === log.vehicleId).map(l => parseFloat(l.odometer) || 0));
-                    if (vehicle && maxOdo > vehicle.currentOdometer) {
+                    const current = parseFloat(vehicle?.currentOdometer) || 0;
+                    if (vehicle && maxOdo > current) {
                         vehicle.currentOdometer = maxOdo;
                         await this.updateVehicle(vehicle);
                     }
@@ -364,10 +593,12 @@
             async deleteLog(id) {
                 this.data.logs = this.data.logs.filter(l => l.id !== id);
                 await this.runTransaction('logs', 'readwrite', s => s.delete(id));
+                if (!this._bulkImporting) this._invalidateLogsCache();
             },
 
             async clearVehicleLogs(vehicleId) {
                 this.data.logs = this.data.logs.filter(l => l.vehicleId !== vehicleId);
+                if (!this._bulkImporting) this._invalidateLogsCache();
                 const tx = this.db.transaction('logs', 'readwrite');
                 const idx = tx.objectStore('logs').index('vehicleId');
                 const req = idx.openCursor(IDBKeyRange.only(vehicleId));
@@ -377,7 +608,15 @@
                 };
             },
 
-            async importData(importedData) {
+            async importData(importedData, options = {}) {
+                const { overwrite = false } = options;
+                this._bulkImporting = true;
+                if (overwrite) {
+                    this.data.vehicles = [];
+                    this.data.logs = [];
+                    this.data.settings = { ...this.defaultSettings };
+                    await this.clearAllData();
+                }
                 if (importedData.vehicles) {
                     for (const v of importedData.vehicles) await this.addVehicle(v);
                 }
@@ -388,6 +627,13 @@
                     this.data.settings = { ...this.data.settings, ...importedData.settings };
                     await this.saveData();
                 }
+
+                if (!this.data.settings.activeVehicleId && this.data.vehicles.length > 0) {
+                    this.data.settings.activeVehicleId = this.data.vehicles[0].id;
+                    await this.saveData();
+                }
+                this._bulkImporting = false;
+                this._invalidateLogsCache();
             },
 
             getActiveVehicle() {
@@ -395,9 +641,15 @@
             },
             
             getVehicleLogs(type = null) {
-                let logs = this.data.logs.filter(l => l.vehicleId === this.data.settings.activeVehicleId);
+                const vehicleId = this.data.settings.activeVehicleId;
+                const key = `${vehicleId || 'none'}|${type || '*'}|${this._logsVersion}`;
+                const cached = this._cache.logsSorted.get(key);
+                if (cached) return cached;
+                let logs = this.data.logs.filter(l => l.vehicleId === vehicleId);
                 if (type) logs = logs.filter(l => l.type === type);
-                return logs.sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest first
+                logs = logs.sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest first
+                this._cache.logsSorted.set(key, logs);
+                return logs;
             }
         };
 
@@ -406,6 +658,32 @@
             t(key) {
                 const lang = store.data.settings.language || 'en';
                 return translations[lang][key] || key;
+            },
+            newId() {
+                if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
+                    return globalThis.crypto.randomUUID();
+                }
+                return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+            },
+            _debounceTimers: new Map(),
+            debounceByKey(key, fn, waitMs = 200) {
+                const t = this._debounceTimers.get(key);
+                if (t) clearTimeout(t);
+                const next = setTimeout(() => {
+                    this._debounceTimers.delete(key);
+                    fn();
+                }, waitMs);
+                this._debounceTimers.set(key, next);
+            },
+            cancelDebounce(key) {
+                const t = this._debounceTimers.get(key);
+                if (t) clearTimeout(t);
+                this._debounceTimers.delete(key);
+            },
+            csvEscape(value) {
+                const s = value === undefined || value === null ? '' : String(value);
+                if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+                return s;
             },
             formatDate(isoString) {
                 if (!isoString) return '';
@@ -418,15 +696,226 @@
                 if (amount === undefined || amount === null || amount === '--' || isNaN(parseFloat(amount))) return '--';
                 return `${store.data.settings.currency}${parseFloat(amount).toFixed(2)}`;
             },
+            getCostPerDistLabel() {
+                const lang = store.data.settings.language || 'en';
+                const unit = store.data.settings.units === 'imperial' ? 'mi' : 'km';
+                if (lang === 'zh') return unit === 'mi' ? '每英里成本' : '每公里成本';
+                return `Cost/${unit}`;
+            },
             getDistUnit() { return store.data.settings.units === 'imperial' ? 'mi' : 'km'; },
+            getPressureUnit() {
+                const u = store.data.settings.pressureUnit;
+                if (u === 'psi' || u === 'kPa' || u === 'bar') return u;
+                return store.data.settings.units === 'imperial' ? 'psi' : 'kPa';
+            },
+            pressureToKpa(value, unit) {
+                const v = parseFloat(value);
+                if (!Number.isFinite(v)) return null;
+                if (unit === 'psi') return v * 6.89476;
+                if (unit === 'bar') return v * 100;
+                return v; // kPa
+            },
+            pressureFromKpa(kpaValue, unit) {
+                const v = parseFloat(kpaValue);
+                if (!Number.isFinite(v)) return null;
+                if (unit === 'psi') return v / 6.89476;
+                if (unit === 'bar') return v / 100;
+                return v; // kPa
+            },
+            formatPressureFromLog(log) {
+                const unit = utils.getPressureUnit();
+                let kpa = null;
+                if (log && log.tirePressureKpa !== undefined && log.tirePressureKpa !== null && log.tirePressureKpa !== '') {
+                    kpa = utils.pressureToKpa(log.tirePressureKpa, 'kPa');
+                } else if (log && log.tirePressure !== undefined && log.tirePressure !== null && log.tirePressure !== '') {
+                    // Back-compat: older entries assumed psi
+                    kpa = utils.pressureToKpa(log.tirePressure, 'psi');
+                }
+                if (kpa === null) return null;
+                const shown = utils.pressureFromKpa(kpa, unit);
+                if (shown === null) return null;
+                const decimals = unit === 'psi' ? 0 : 1;
+                return `${shown.toFixed(decimals)} ${unit}`;
+            },
             getFuelUnit() { 
                 const v = store.getActiveVehicle();
                 return v && v.fuelUnit ? v.fuelUnit : (store.data.settings.units === 'imperial' ? 'Gal' : 'L'); 
             },
             getEfficiencyLabel() {
                  const v = store.getActiveVehicle();
-                 if (v && v.fuelUnit === 'kWh') return 'kWh/100km';
-                 return store.data.settings.units === 'imperial' ? 'MPG' : 'L/100km'; 
+                 const distUnit = utils.getDistUnit();
+                 const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (store.data.settings.units === 'imperial' ? 'Gal' : 'L');
+                 if (fuelUnit === 'kWh') return `kWh/100${distUnit}`;
+                 if (distUnit === 'mi' && fuelUnit === 'Gal') return 'MPG';
+                 return `${fuelUnit}/100${distUnit}`;
+            },
+            calcEfficiencyValue(fuelAmount, distAmount, fuelUnit, distUnit) {
+                const f = parseFloat(fuelAmount) || 0;
+                const d = parseFloat(distAmount) || 0;
+                if (d <= 0 || f <= 0) return null;
+                if (distUnit === 'mi' && fuelUnit === 'Gal') return d / f; // MPG
+                return (f / d) * 100; // per 100 distance
+            },
+            filterByDateRange(logs, fromIso, toIso) {
+                if (!fromIso && !toIso) return logs;
+                const from = fromIso ? new Date(fromIso) : null;
+                const to = toIso ? new Date(toIso) : null;
+                return logs.filter(l => {
+                    const d = new Date(l.date);
+                    if (from && d < from) return false;
+                    if (to) {
+                        const end = new Date(to);
+                        end.setHours(23, 59, 59, 999);
+                        if (d > end) return false;
+                    }
+                    return true;
+                });
+            },
+            getTirePositions() { return ['front_left','front_right','rear_left','rear_right']; },
+            formatDaysShort(days) {
+                const d = Math.max(0, Math.ceil(days));
+                return (store.data.settings.language === 'zh') ? `${d}天` : `${d}d`;
+            },
+            getTireReplacementStatus(vehicle) {
+                const distInt = parseInt(store.data.settings.tireReplaceDist) || 0;
+                const yearsInt = parseInt(store.data.settings.tireReplaceYears) || 0;
+                const now = new Date();
+                const currentOdo = parseFloat(vehicle?.currentOdometer) || 0;
+                const events = store.data.logs
+                    .filter(l => l.vehicleId === vehicle?.id && (l.type === 'tire_replace' || l.type === 'tire_rotation'))
+                    .map(l => ({
+                        log: l,
+                        odo: parseFloat(l.odometer) || 0,
+                        dateMs: l.date ? new Date(l.date).getTime() : 0
+                    }))
+                    .sort((a, b) => (a.odo - b.odo) || (a.dateMs - b.dateMs));
+
+                const posToTireId = new Map(utils.getTirePositions().map(p => [p, `init:${vehicle?.id}:${p}`]));
+                const tireLastReplace = new Map(); // tireId -> { odo, dateMs, logId }
+
+                for (const { log, odo, dateMs } of events) {
+                    if (log.type === 'tire_replace') {
+                        const pos = log.tirePosition;
+                        if (!pos) continue;
+                        const tireId = log.tireId || `rep:${log.id}`;
+                        posToTireId.set(pos, tireId);
+                        tireLastReplace.set(tireId, { odo, dateMs, logId: log.id });
+                    } else if (log.type === 'tire_rotation') {
+                        const swaps = Array.isArray(log.tireSwaps) && log.tireSwaps.length
+                            ? log.tireSwaps
+                            : (log.tireSwapA && log.tireSwapB ? [{ a: log.tireSwapA, b: log.tireSwapB }] : []);
+                        for (const s of swaps) {
+                            const a = s?.a;
+                            const b = s?.b;
+                            if (!a || !b || a === b) continue;
+                            const idA = posToTireId.get(a);
+                            const idB = posToTireId.get(b);
+                            posToTireId.set(a, idB);
+                            posToTireId.set(b, idA);
+                        }
+                    }
+                }
+
+                const yearDays = 365;
+                return utils.getTirePositions().map((pos) => {
+                    const tireId = posToTireId.get(pos);
+                    const latest = tireId ? tireLastReplace.get(tireId) : null;
+                    if (!latest) {
+                        return { pos, editLogId: null, isOverdue: false, primary: utils.t('tire_not_set'), secondary: '', remainingKm: null, remainingDays: null, dueDateIso: null, dueOdo: null };
+                    }
+
+                    const lastOdo = latest.odo;
+                    const lastDate = latest.dateMs ? new Date(latest.dateMs) : null;
+                    const dueOdo = distInt > 0 ? (lastOdo + distInt) : null;
+                    const remainingKm = dueOdo === null ? null : (dueOdo - currentOdo);
+
+                    let dueDate = null;
+                    let remainingDays = null;
+                    if (yearsInt > 0 && lastDate) {
+                        dueDate = new Date(lastDate);
+                        dueDate.setFullYear(dueDate.getFullYear() + yearsInt);
+                        remainingDays = Math.ceil((dueDate - now) / 86400000);
+                    }
+
+                    const overdueDist = remainingKm !== null && remainingKm <= 0;
+                    const overdueTime = remainingDays !== null && remainingDays <= 0;
+                    const isOverdue = overdueDist || overdueTime;
+
+                    const distText = remainingKm === null ? '' : `${Math.max(0, Math.round(remainingKm)).toLocaleString()} ${utils.getDistUnit()}`;
+                    const timeText = remainingDays === null ? '' : utils.formatDaysShort(remainingDays);
+
+                    const distFrac = remainingKm === null ? Number.POSITIVE_INFINITY : (remainingKm / Math.max(1, distInt));
+                    const timeFrac = remainingDays === null ? Number.POSITIVE_INFINITY : (remainingDays / Math.max(1, yearsInt * yearDays));
+                    const primaryIsDist = distFrac <= timeFrac;
+
+                    const primary = isOverdue ? utils.t('overdue') : (primaryIsDist ? (distText || timeText) : (timeText || distText));
+                    const secondaryParts = [];
+                    if (!isOverdue && distText && !primaryIsDist) secondaryParts.push(distText);
+                    if (!isOverdue && timeText && primaryIsDist) secondaryParts.push(timeText);
+                    const secondary = secondaryParts.length ? `${utils.t('due_in')} ${secondaryParts.join(' / ')}` : '';
+
+                    return { pos, editLogId: latest.logId || null, isOverdue, primary, secondary, remainingKm, remainingDays, dueDateIso: dueDate ? dueDate.toISOString() : null, dueOdo };
+                });
+            },
+
+            getTireTimeline(vehicle) {
+                const events = store.data.logs
+                    .filter(l => l.vehicleId === vehicle?.id && (l.type === 'tire_replace' || l.type === 'tire_rotation'))
+                    .map(l => ({
+                        log: l,
+                        odo: parseFloat(l.odometer) || 0,
+                        dateMs: l.date ? new Date(l.date).getTime() : 0
+                    }))
+                    .sort((a, b) => (a.odo - b.odo) || (a.dateMs - b.dateMs));
+
+                const posToTireId = new Map(utils.getTirePositions().map(p => [p, `init:${vehicle?.id}:${p}`]));
+                const tires = new Map(); // tireId -> { tireId, currentPos, lastReplace, events: [] }
+
+                const ensure = (tireId) => {
+                    if (!tires.has(tireId)) tires.set(tireId, { tireId, currentPos: null, lastReplace: null, events: [] });
+                    return tires.get(tireId);
+                };
+
+                for (const { log, odo } of events) {
+                    if (log.type === 'tire_replace') {
+                        const pos = log.tirePosition;
+                        if (!pos) continue;
+                        const tireId = log.tireId || `rep:${log.id}`;
+                        posToTireId.set(pos, tireId);
+                        const t = ensure(tireId);
+                        t.lastReplace = { logId: log.id, date: log.date, odometer: odo, brand: log.tireBrand || '' };
+                        t.events.push({ kind: 'replace', logId: log.id, date: log.date, odometer: odo, pos, brand: log.tireBrand || '' });
+                    } else if (log.type === 'tire_rotation') {
+                        const swaps = Array.isArray(log.tireSwaps) && log.tireSwaps.length
+                            ? log.tireSwaps
+                            : (log.tireSwapA && log.tireSwapB ? [{ a: log.tireSwapA, b: log.tireSwapB }] : []);
+                        for (const s of swaps) {
+                            const a = s?.a;
+                            const b = s?.b;
+                            if (!a || !b || a === b) continue;
+                            const idA = posToTireId.get(a);
+                            const idB = posToTireId.get(b);
+                            if (idA) ensure(idA).events.push({ kind: 'rotate', logId: log.id, date: log.date, odometer: odo, from: a, to: b });
+                            if (idB) ensure(idB).events.push({ kind: 'rotate', logId: log.id, date: log.date, odometer: odo, from: b, to: a });
+                            posToTireId.set(a, idB);
+                            posToTireId.set(b, idA);
+                        }
+                    }
+                }
+
+                for (const [pos, tireId] of posToTireId.entries()) {
+                    ensure(tireId).currentPos = pos;
+                }
+
+                const posRank = new Map(utils.getTirePositions().map((p, i) => [p, i]));
+                return Array.from(tires.values()).sort((a, b) => {
+                    const ar = a.currentPos ? posRank.get(a.currentPos) ?? 999 : 999;
+                    const br = b.currentPos ? posRank.get(b.currentPos) ?? 999 : 999;
+                    if (ar !== br) return ar - br;
+                    const ad = a.lastReplace?.date ? new Date(a.lastReplace.date).getTime() : 0;
+                    const bd = b.lastReplace?.date ? new Date(b.lastReplace.date).getTime() : 0;
+                    return bd - ad;
+                });
             },
             
             getAvailableYears() {
@@ -453,7 +942,10 @@
                 if (!logs.length) return { efficiency: '--', costKm: '--', totalCost: 0, totalDist: 0 };
                 
                 // 1. Total Cost
-                const totalCost = logs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
+                const totalCost = logs.reduce((sum, l) => {
+                    const c = parseFloat(l.cost);
+                    return sum + (Number.isFinite(c) ? c : 0);
+                }, 0);
                 
                 // 2. Total Distance
                 const sorted = [...logs].sort((a, b) => parseFloat(a.odometer) - parseFloat(b.odometer));
@@ -466,9 +958,14 @@
                 if (category === 'fuel' || category === 'all') {
                     // Filter specifically for fuel logs to calculate efficiency
                     const fuelLogs = logs.filter(l => l.type === 'fuel').sort((a, b) => parseFloat(a.odometer) - parseFloat(b.odometer));
+                    const v = store.getActiveVehicle();
+                    const isImperial = store.data.settings.units === 'imperial';
+                    const isEV = v && v.fuelUnit === 'kWh';
+                    const distUnit = utils.getDistUnit();
+                    const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (isImperial ? 'Gal' : 'L');
                     
                     if (fuelLogs.length > 1) {
-                        let totalLiters = 0;
+                        let totalFuel = 0;
                         let validDist = 0;
                         
                         for (let i = 0; i < fuelLogs.length - 1; i++) {
@@ -480,13 +977,14 @@
                                 const dist = next.odometer - curr.odometer;
                                 if (dist > 0) {
                                     validDist += dist;
-                                    totalLiters += parseFloat(next.liters); 
+                                    totalFuel += parseFloat(next.liters) || 0; 
                                 }
                             }
                         }
                         
-                        if (validDist > 0) {
-                            efficiency = (totalLiters / validDist * 100).toFixed(1);
+                        if (validDist > 0 && totalFuel > 0) {
+                            const eff = utils.calcEfficiencyValue(totalFuel, validDist, fuelUnit, distUnit);
+                            if (eff !== null) efficiency = eff.toFixed(1);
                         }
                     }
                 }
@@ -516,13 +1014,21 @@
             generateTrendChart(logs) {
                 const fuelLogs = logs.filter(l => l.type === 'fuel' && !l.isPartial).sort((a,b) => new Date(a.date) - new Date(b.date));
                 if (fuelLogs.length < 2) return '';
+                const v = store.getActiveVehicle();
+                const isImperial = store.data.settings.units === 'imperial';
+                const isEV = v && v.fuelUnit === 'kWh';
+                const distUnit = utils.getDistUnit();
+                const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (isImperial ? 'Gal' : 'L');
                 
                 const dataPoints = [];
                 for (let i = 0; i < fuelLogs.length - 1; i++) {
                      const dist = fuelLogs[i+1].odometer - fuelLogs[i].odometer;
                      if (dist > 0) {
-                         const eff = (fuelLogs[i+1].liters / dist * 100);
-                         dataPoints.push(eff);
+                         const fuel = parseFloat(fuelLogs[i+1].liters) || 0;
+                         if (fuel > 0) {
+                             const eff = utils.calcEfficiencyValue(fuel, dist, fuelUnit, distUnit);
+                             dataPoints.push(eff);
+                         }
                      }
                 }
                 if (dataPoints.length < 2) return '';
@@ -579,8 +1085,8 @@
                 
                 const data = months.map(m => {
                     const monthLogs = logs.filter(l => l.date.startsWith(m));
-                    const fuel = monthLogs.filter(l => l.type === 'fuel').reduce((sum, l) => sum + parseFloat(l.cost), 0);
-                    const service = monthLogs.filter(l => l.type !== 'fuel').reduce((sum, l) => sum + parseFloat(l.cost), 0);
+                    const fuel = monthLogs.filter(l => l.type === 'fuel').reduce((sum, l) => sum + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
+                    const service = monthLogs.filter(l => l.type !== 'fuel').reduce((sum, l) => sum + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
                     return { month: m, fuel, service };
                 });
                 
@@ -618,12 +1124,17 @@
 
             exportCSV() {
                 const logs = store.getVehicleLogs();
-                let csv = 'Date,Type,Odometer,Cost,Details\n';
+                const fuelUnit = utils.getFuelUnit();
+                const rows = [['Date', 'Type', `Odometer (${utils.getDistUnit()})`, `Cost (${store.data.settings.currency})`, 'Details']];
                 logs.forEach(l => {
                     let details = l.notes || '';
-                    if (l.type === 'fuel') details = `${l.liters}L, ${l.isPartial ? 'Partial' : 'Full'}`;
-                    csv += `${l.date},${l.type},${l.odometer},${l.cost},"${details}"\n`;
+                    if (l.type === 'fuel') {
+                        const tank = l.isPartial ? utils.t('partial') : utils.t('full');
+                        details = `${l.liters}${fuelUnit}, ${tank}`;
+                    }
+                    rows.push([l.date, l.type, l.odometer ?? '', l.cost ?? '', details]);
                 });
+                const csv = rows.map(r => r.map(utils.csvEscape).join(',')).join('\n') + '\n';
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -652,7 +1163,7 @@
 VERSION:2.0
 PRODID:-//FuelMate//EN
 BEGIN:VEVENT
-UID:${Date.now()}@fuelmate
+UID:${utils.newId()}@fuelmate
 DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
 DTSTART;VALUE=DATE:${expDate}
 SUMMARY:${title}
@@ -666,6 +1177,96 @@ END:VCALENDAR`;
                 a.href = url;
                 a.download = `fuelmate_${type}.ics`;
                 a.click();
+            },
+
+            exportDateCalendar(title, isoDate, alarmDays = null) {
+                if (!isoDate) return;
+                const dateStr = isoDate.slice(0, 10).replace(/-/g, '');
+                let alarmBlock = '';
+                if (alarmDays !== null) {
+                    const trigger = `-P${alarmDays}D`;
+                    alarmBlock = `BEGIN:VALARM\nTRIGGER:${trigger}\nDESCRIPTION:${title}\nACTION:DISPLAY\nEND:VALARM\n`;
+                }
+                const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//FuelMate//EN
+BEGIN:VEVENT
+UID:${utils.newId()}@fuelmate
+DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
+DTSTART;VALUE=DATE:${dateStr}
+SUMMARY:${title}
+${alarmBlock}END:VEVENT
+END:VCALENDAR`;
+                const blob = new Blob([ics], { type: 'text/calendar' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fuelmate_reminder_${dateStr}.ics`;
+                a.click();
+            },
+            formatFileSize(bytes) {
+                const b = Number(bytes) || 0;
+                if (b < 1024) return `${b} B`;
+                if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+                return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+            },
+            summarizeImportData(data) {
+                const vehicles = Array.isArray(data?.vehicles) ? data.vehicles : [];
+                const logs = Array.isArray(data?.logs) ? data.logs : [];
+                const typeCounts = logs.reduce((acc, l) => {
+                    const t = l?.type || 'unknown';
+                    acc[t] = (acc[t] || 0) + 1;
+                    return acc;
+                }, {});
+                const settings = data?.settings || {};
+                return {
+                    vehiclesCount: vehicles.length,
+                    logsCount: logs.length,
+                    typeCounts,
+                    settings: {
+                        units: settings.units,
+                        currency: settings.currency,
+                        language: settings.language
+                    }
+                };
+            },
+            validateImportData(data) {
+                const errors = [];
+                const warnings = [];
+                if (!data || typeof data !== 'object') errors.push('root_not_object');
+
+                const vehicles = Array.isArray(data?.vehicles) ? data.vehicles : null;
+                const logs = Array.isArray(data?.logs) ? data.logs : null;
+                const settings = data?.settings;
+
+                if (!vehicles) errors.push('vehicles_not_array');
+                if (!logs) errors.push('logs_not_array');
+                if (settings !== undefined && (settings === null || typeof settings !== 'object')) errors.push('settings_not_object');
+
+                if (vehicles) {
+                    const ids = new Set();
+                    for (const v of vehicles) {
+                        if (!v || typeof v !== 'object') { errors.push('vehicle_not_object'); break; }
+                        if (!v.id) { errors.push('vehicle_missing_id'); break; }
+                        ids.add(String(v.id));
+                    }
+                    if (logs) {
+                        let orphan = 0;
+                        for (const l of logs) {
+                            if (!l || typeof l !== 'object') { errors.push('log_not_object'); break; }
+                            if (!l.id || !l.vehicleId || !l.type || !l.date) { errors.push('log_missing_fields'); break; }
+                            if (!ids.has(String(l.vehicleId))) orphan++;
+                        }
+                        if (orphan > 0) warnings.push({ code: 'orphan_logs', count: orphan });
+                    }
+                }
+
+                return {
+                    ok: errors.length === 0,
+                    errors,
+                    warnings,
+                    summary: utils.summarizeImportData(data)
+                };
             },
 
             getCarColorClass(color) {
@@ -692,6 +1293,58 @@ END:VCALENDAR`;
                 }).catch(err => console.error("DB Init Failed", err));
             },
 
+            getPageLimit(pageKey) {
+                const v = store.pageLimits?.[pageKey];
+                return Number.isFinite(v) && v > 0 ? v : 100;
+            },
+
+            _searchDebounceKey(pageKey, filterKey) {
+                return `search:${pageKey}:${filterKey}`;
+            },
+
+            onSearchInput(pageKey, filterKey, value) {
+                const key = this._searchDebounceKey(pageKey, filterKey);
+                utils.debounceByKey(key, () => {
+                    store.pageFilters[filterKey] = value;
+                    this.resetPageLimit(pageKey);
+                    this.render();
+                }, 200);
+            },
+
+            clearSearch(pageKey, filterKey) {
+                const key = this._searchDebounceKey(pageKey, filterKey);
+                utils.cancelDebounce(key);
+                store.pageFilters[filterKey] = '';
+                this.resetPageLimit(pageKey);
+                this.render();
+            },
+
+            resetPageLimit(pageKey) {
+                if (!store.pageLimits) store.pageLimits = {};
+                if (pageKey && Object.prototype.hasOwnProperty.call(store.pageLimits, pageKey)) {
+                    store.pageLimits[pageKey] = 100;
+                }
+            },
+
+            loadMore(pageKey, step = 100) {
+                if (!store.pageLimits) store.pageLimits = {};
+                const curr = this.getPageLimit(pageKey);
+                store.pageLimits[pageKey] = curr + step;
+                this.render();
+            },
+
+            renderLoadMore(pageKey, shown, total) {
+                const safeShown = Math.max(0, Math.min(total || 0, shown || 0));
+                return `
+                    <div class="pt-2 pb-6 flex flex-col items-center gap-2">
+                        <div class="text-[10px] theme-text-sub">${utils.t('showing')} ${safeShown.toLocaleString()} / ${(total || 0).toLocaleString()}</div>
+                        <button onclick="ui.loadMore('${pageKey}')" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading border theme-border active:scale-95 transition-transform">
+                            ${utils.t('load_more')}
+                        </button>
+                    </div>
+                `;
+            },
+
             render() {
                 const app = document.getElementById('app');
                 const page = router.currentPage;
@@ -713,6 +1366,7 @@ END:VCALENDAR`;
                     else if (page === 'maintenance') content = this.renderMaintenance(vehicle);
                     else if (page === 'parking') content = this.renderParking(vehicle);
                     else if (page === 'analytics') content = this.renderAnalytics(vehicle);
+                    else if (page === 'reminders') content = this.renderReminders(vehicle);
                     else if (page === 'settings') content = this.renderSettings(vehicle);
                 }
 
@@ -734,6 +1388,58 @@ END:VCALENDAR`;
                         <button onclick="ui.openAddVehicle()" class="grad-teal text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-teal-500/30 active:scale-95 transition-transform flex items-center gap-2">
                             <span class="material-icons">add</span> ${utils.t('add_vehicle')}
                         </button>
+                        <button onclick="ui.addDemoCar()" class="mt-3 bg-white dark:bg-slate-800 theme-text-heading px-8 py-3 rounded-xl font-bold shadow active:scale-95 transition-transform flex items-center gap-2 border theme-border">
+                            <span class="material-icons text-teal-500">auto_awesome</span> ${utils.t('add_demo_car')}
+                        </button>
+                    </div>
+                `;
+            },
+
+            renderSearchPanel(opts) {
+                const {
+                    searchValue = '',
+                    onSearchInput = '',
+                    onClearSearch = '',
+                    placeholder = 'Search...',
+                    fromValue = '',
+                    toValue = '',
+                    onFromChange = '',
+                    onToChange = '',
+                    onClearRange = '',
+                    chips = []
+                } = opts || {};
+
+                const hasRange = onFromChange || onToChange;
+                const hasSearch = onSearchInput;
+                return `
+                    <div class="space-y-3 mb-4">
+                        ${hasSearch ? `
+                            <div class="relative">
+                                <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
+                                <input type="text" placeholder="${placeholder}" value="${searchValue || ''}" oninput="${onSearchInput}" class="w-full pl-10 pr-10 py-2 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
+                                ${searchValue ? `<button onclick="${onClearSearch}" class="absolute right-2 top-2 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><span class="material-icons text-slate-500 text-base">close</span></button>` : ''}
+                            </div>
+                        ` : ''}
+
+                        ${hasRange ? `
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="relative">
+                                    <input type="date" value="${fromValue || ''}" onchange="${onFromChange}" class="w-full p-2.5 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
+                                </div>
+                                <div class="relative">
+                                    <input type="date" value="${toValue || ''}" onchange="${onToChange}" class="w-full p-2.5 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
+                                </div>
+                            </div>
+                            ${(fromValue || toValue) ? `<button onclick="${onClearRange}" class="w-full py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">${utils.t('cancel')}</button>` : ''}
+                        ` : ''}
+
+                        ${chips && chips.length ? `
+                            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                                ${chips.map(c => `
+                                    <button onclick="${c.onClick}" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${c.active ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/20' : 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub'}">${c.label}</button>
+                                `).join('')}
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             },
@@ -783,6 +1489,7 @@ END:VCALENDAR`;
                 if (mode === 'month' && !value) value = new Date().toISOString().slice(0, 7);
                 if (mode === 'year' && !value) value = new Date().getFullYear().toString();
                 store.pageFilters[page] = { mode, value };
+                this.resetPageLimit(page);
                 this.render();
             },
 
@@ -791,6 +1498,7 @@ END:VCALENDAR`;
                 const filter = store.pageFilters.dashboard;
                 const filteredLogs = utils.filterLogs(logs, filter);
                 const stats = utils.calculateStats(filteredLogs, 'all');
+                const tireStatuses = utils.getTireReplacementStatus(vehicle);
                 
                 let remindersHtml = '';
                 const reminders = [];
@@ -840,7 +1548,10 @@ END:VCALENDAR`;
                 if (reminders.length > 0) {
                     remindersHtml = `
                         <div class="px-6 mb-4 space-y-3">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><span class="material-icons text-sm">notifications</span> ${utils.t('reminders')}</div>
+                            <div class="flex items-center justify-between">
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1"><span class="material-icons text-sm">notifications</span> ${utils.t('reminders')}</div>
+                                <button onclick="router.navigate('reminders')" class="text-[10px] font-bold text-slate-400 underline">${utils.t('view_all')}</button>
+                            </div>
                             ${reminders.map(r => {
                                 if (r.type === 'backup_needed') {
                                     return `
@@ -898,6 +1609,9 @@ END:VCALENDAR`;
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
+                                        <button onclick="router.navigate('reminders')" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/30 transition text-white">
+                                            <span class="material-icons text-lg">notifications</span>
+                                        </button>
                                         <button onclick="ui.openCalendarSelector()" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/30 transition text-white">
                                             <span class="material-icons text-lg">event</span>
                                         </button>
@@ -918,9 +1632,9 @@ END:VCALENDAR`;
                                     <div class="text-[10px] theme-text-sub">${utils.getEfficiencyLabel()}</div>
                                 </div>
                                 <div class="theme-bg-card p-4 rounded-2xl card-shadow">
-                                    <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.t('cost_km')}</div>
+                                    <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.getCostPerDistLabel()}</div>
                                     <div class="text-2xl font-black text-blue-600">${stats.costKm}</div>
-                                    <div class="text-[10px] theme-text-sub">/${utils.getDistUnit()}</div>
+                                    <div class="text-[10px] theme-text-sub">&nbsp;</div>
                                 </div>
                                 <div class="theme-bg-card p-4 rounded-2xl card-shadow">
                                     <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.t('total_cost')}</div>
@@ -930,6 +1644,25 @@ END:VCALENDAR`;
                                     <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.t('total_dist')}</div>
                                     <div class="text-xl font-black theme-text-heading">${stats.totalDist.toLocaleString()}</div>
                                     <div class="text-[10px] theme-text-sub">${utils.getDistUnit()}</div>
+                                </div>
+                            </div>
+
+                            <div class="theme-bg-card p-4 rounded-2xl card-shadow mb-6">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-bold theme-text-heading flex items-center gap-2">
+                                        <span class="material-icons text-slate-400 text-base">tire_repair</span>
+                                        ${utils.t('next_tire_change')}
+                                    </div>
+                                    <button onclick="ui.openAddService(null,'tire_replace')" class="text-xs font-bold text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-1 rounded-lg">+ ${utils.t('tire_replace')}</button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 mt-3">
+                                    ${tireStatuses.map(s => `
+                                        <button onclick="${s.editLogId ? `ui.openAddService('${s.editLogId}')` : `ui.openAddService(null,'tire_replace'); setTimeout(() => { const el=document.getElementById('l_tire_pos'); if (el) el.value='${s.pos}'; }, 60);`}" class="text-left p-3 rounded-xl border theme-border bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition">
+                                            <div class="text-xs theme-text-sub font-bold">${utils.t('tire_' + s.pos)}</div>
+                                            <div class="text-sm font-black ${s.isOverdue ? 'text-red-600' : 'theme-text-heading'}">${s.primary}</div>
+                                            <div class="text-[10px] theme-text-sub">${s.secondary || '&nbsp;'}</div>
+                                        </button>
+                                    `).join('')}
                                 </div>
                             </div>
                         </div>
@@ -959,11 +1692,206 @@ END:VCALENDAR`;
                 `;
             },
 
+            renderReminders(vehicle) {
+                const now = new Date();
+                const center = store.data.settings.reminderCenter || { snoozedUntil: {}, done: {} };
+                const snoozedUntil = center.snoozedUntil || {};
+                const done = center.done || {};
+                const tab = store.pageFilters.remindersTab || 'active';
+
+                const items = [];
+
+                // Tires
+                const tireThresholdKm = (() => {
+                    const dist = parseInt(store.data.settings.tireReplaceDist) || 0;
+                    if (dist <= 0) return 2000;
+                    return Math.max(500, Math.min(5000, Math.round(dist * 0.1)));
+                })();
+                const tireThresholdDays = 60;
+                for (const s of utils.getTireReplacementStatus(vehicle)) {
+                    const near =
+                        s.isOverdue ||
+                        (s.remainingKm !== null && s.remainingKm <= tireThresholdKm) ||
+                        (s.remainingDays !== null && s.remainingDays <= tireThresholdDays);
+                    if (!near) continue;
+                    const id = `tire:${vehicle.id}:${s.pos}:${s.editLogId || 'none'}`;
+                    items.push({
+                        id,
+                        icon: 'tire_repair',
+                        title: `${utils.t('next_tire_change')} • ${utils.t('tire_' + s.pos)}`,
+                        meta: [s.primary, s.secondary].filter(Boolean).join(' • '),
+                        dueDateIso: s.dueDateIso,
+                        editAction: s.editLogId
+                            ? `ui.openAddService('${s.editLogId}')`
+                            : `ui.openAddService(null,'tire_replace'); setTimeout(() => { const el=document.getElementById('l_tire_pos'); if (el) el.value='${s.pos}'; }, 60);`
+                    });
+                }
+
+                // Document expiry
+                ['license', 'insurance', 'registration'].forEach(type => {
+                    const setting = store.data.settings.reminders?.[type];
+                    if (setting && !setting.enabled) return;
+                    const latest = store.getVehicleLogs(type)[0];
+                    if (!latest || !latest.expiryDate) return;
+                    const days = Math.ceil((new Date(latest.expiryDate) - now) / 86400000);
+                    if (days > (setting?.days || 30)) return;
+                    const id = `doc:${vehicle.id}:${type}:${latest.expiryDate}`;
+                    items.push({
+                        id,
+                        icon: 'assignment',
+                        title: utils.t(type),
+                        meta: days <= 0 ? utils.t('overdue') : `${utils.t('due_in')} ${utils.formatDaysShort(days)}`,
+                        dueDateIso: new Date(latest.expiryDate).toISOString(),
+                        editAction: `ui.openAddService('${latest.id}')`,
+                        calendarAction: `utils.exportCalendar('${type}', 0)`
+                    });
+                });
+
+                // Periodic maintenance
+                const distInt = parseInt(store.data.settings.maintenanceDist) || 0;
+                const timeInt = parseInt(store.data.settings.maintenanceTime) || 0;
+                const lastService = store.getVehicleLogs('periodic_maintenance')[0];
+                const lastOdo = lastService ? parseFloat(lastService.odometer) || 0 : 0;
+                const lastDate = lastService ? new Date(lastService.date) : null;
+                if (distInt > 0) {
+                    const nextOdo = lastOdo + distInt;
+                    const remaining = nextOdo - (parseFloat(vehicle.currentOdometer) || 0);
+                    if (remaining <= 500) {
+                        const id = `svc:${vehicle.id}:dist:${nextOdo}`;
+                        items.push({
+                            id,
+                            icon: 'build',
+                            title: utils.t('due_service'),
+                            meta: remaining <= 0 ? utils.t('overdue') : `${utils.t('due_in')} ${Math.max(0, Math.round(remaining)).toLocaleString()} ${utils.getDistUnit()}`,
+                            dueDateIso: null,
+                            editAction: `ui.openAddService(null,'periodic_maintenance')`
+                        });
+                    }
+                }
+                if (timeInt > 0 && lastDate) {
+                    const nextDate = new Date(lastDate);
+                    nextDate.setMonth(nextDate.getMonth() + timeInt);
+                    const remainingDays = Math.ceil((nextDate - now) / 86400000);
+                    if (remainingDays <= 30) {
+                        const id = `svc:${vehicle.id}:time:${nextDate.toISOString().slice(0,10)}`;
+                        items.push({
+                            id,
+                            icon: 'build',
+                            title: utils.t('due_service'),
+                            meta: remainingDays <= 0 ? utils.t('overdue') : `${utils.t('due_in')} ${utils.formatDaysShort(remainingDays)}`,
+                            dueDateIso: nextDate.toISOString(),
+                            editAction: `ui.openAddService(null,'periodic_maintenance')`,
+                            calendarAction: `utils.exportDateCalendar('${utils.t('due_service')}: ${vehicle.make} ${vehicle.model}', '${nextDate.toISOString()}', 0)`
+                        });
+                    }
+                }
+
+                // Backup reminder (existing logic)
+                const logs = store.getVehicleLogs();
+                let showBackup = false;
+                if (!store.data.settings.lastBackupDate) {
+                    if (logs.length > 5) showBackup = true;
+                } else {
+                    const daysSince = (now - new Date(store.data.settings.lastBackupDate)) / 86400000;
+                    if (daysSince > 30) showBackup = true;
+                }
+                if (showBackup) {
+                    const id = `backup:${vehicle.id}`;
+                    items.push({
+                        id,
+                        icon: 'cloud_upload',
+                        title: utils.t('backup_needed'),
+                        meta: utils.t('backup_desc'),
+                        dueDateIso: null,
+                        editAction: `ui.exportData(); ui.render();`
+                    });
+                }
+
+                const activeItems = items.filter(it => {
+                    if (done[it.id]) return false;
+                    const until = snoozedUntil[it.id];
+                    if (!until) return true;
+                    return new Date(until) <= now;
+                });
+                const snoozedItems = items.filter(it => {
+                    if (done[it.id]) return false;
+                    const until = snoozedUntil[it.id];
+                    return until && new Date(until) > now;
+                });
+                const doneItems = items.filter(it => !!done[it.id]);
+                const visible =
+                    tab === 'snoozed' ? snoozedItems :
+                    tab === 'done' ? doneItems :
+                    activeItems;
+
+                return `
+                    <div class="px-6 pt-safe min-h-screen pb-24">
+                        <div class="flex items-center justify-between mb-4">
+                            <h1 class="text-3xl font-black theme-text-heading">${utils.t('reminder_center')}</h1>
+                            <button onclick="router.navigate('dashboard')" class="text-sm font-bold text-teal-600">${utils.t('dashboard')}</button>
+                        </div>
+
+                        <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 mb-4">
+                            <button onclick="store.pageFilters.remindersTab='active'; ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${tab==='active'?'bg-white dark:bg-slate-700 shadow':''}">${utils.t('tab_active')} (${activeItems.length})</button>
+                            <button onclick="store.pageFilters.remindersTab='snoozed'; ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${tab==='snoozed'?'bg-white dark:bg-slate-700 shadow':''}">${utils.t('tab_snoozed')} (${snoozedItems.length})</button>
+                            <button onclick="store.pageFilters.remindersTab='done'; ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${tab==='done'?'bg-white dark:bg-slate-700 shadow':''}">${utils.t('tab_done')} (${doneItems.length})</button>
+                        </div>
+
+                        <div class="space-y-3">
+                            ${visible.length ? visible.map(it => `
+                                <div class="theme-bg-card p-4 rounded-2xl card-shadow border theme-border">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                                <span class="material-icons text-slate-500">${it.icon}</span>
+                                            </div>
+                                            <div>
+                                                <div class="font-bold theme-text-heading">${it.title}</div>
+                                                <div class="text-xs theme-text-sub mt-0.5">${it.meta || '&nbsp;'}</div>
+                                                ${snoozedUntil[it.id] && !done[it.id] ? `<div class="text-[10px] text-slate-400 mt-1">Snoozed until ${utils.formatDate(snoozedUntil[it.id])}</div>` : ''}
+                                            </div>
+                                        </div>
+                                        <button onclick="${it.editAction}" class="text-slate-300 hover:text-sky-500"><span class="material-icons">edit</span></button>
+                                    </div>
+                                    <div class="flex gap-2 mt-3">
+                                        ${tab === 'done'
+                                            ? `<button onclick="ui.restoreReminder('${it.id}')" class="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">${utils.t('restore')}</button>`
+                                            : `
+                                                <button onclick="ui.snoozeReminder('${it.id}', 1)" class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">${utils.t('snooze_1d')}</button>
+                                                <button onclick="ui.snoozeReminder('${it.id}', 7)" class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">${utils.t('snooze_7d')}</button>
+                                                <button onclick="ui.snoozeReminder('${it.id}', 30)" class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">${utils.t('snooze_30d')}</button>
+                                                ${tab === 'snoozed' ? `<button onclick="ui.unsnoozeReminder('${it.id}')" class="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">${utils.t('unsnooze')}</button>` : `<button onclick="ui.markReminderDone('${it.id}')" class="flex-1 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white">${utils.t('mark_done')}</button>`}
+                                            `}
+                                        ${it.dueDateIso ? `<button onclick="utils.exportDateCalendar('${it.title}: ${vehicle.make} ${vehicle.model}', '${it.dueDateIso}', 0)" class="py-2 px-3 rounded-xl text-xs font-bold bg-blue-50 text-blue-700">ICS</button>` : ''}
+                                    </div>
+                                </div>
+                            `).join('') : `<div class="text-center theme-text-sub py-12">No reminders</div>`}
+                        </div>
+                    </div>
+                `;
+            },
+
             renderFuel(vehicle) {
                 const logs = store.getVehicleLogs('fuel');
                 const filter = store.pageFilters.fuel;
-                const filteredLogs = utils.filterLogs(logs, filter);
+                const q = (store.pageFilters.fuelSearch || '').toLowerCase();
+                const fuelFlags = store.pageFilters.fuelFlags || { full: false, partial: false };
+                const from = store.pageFilters.fuelFrom || '';
+                const to = store.pageFilters.fuelTo || '';
+                const filteredLogs = store._getCachedFiltered(
+                    `fuel|${store.data.settings.language || 'en'}|${filter.mode}:${filter.value}|${from}|${to}|${q}|${fuelFlags.full ? 1 : 0}${fuelFlags.partial ? 1 : 0}`,
+                    () => {
+                        let out = utils.filterLogs(logs, filter);
+                        out = utils.filterByDateRange(out, from, to);
+                        if (q) out = out.filter(l => store.getLogSearchText(l).includes(q));
+                        if (fuelFlags.full && !fuelFlags.partial) out = out.filter(l => !l.isPartial);
+                        if (fuelFlags.partial && !fuelFlags.full) out = out.filter(l => !!l.isPartial);
+                        return out;
+                    }
+                );
                 const stats = utils.calculateStats(filteredLogs, 'fuel');
+                const limit = ui.getPageLimit('fuel');
+                const visibleLogs = filteredLogs.slice(0, limit);
                 
                 return `
                     <div class="px-6 pt-safe min-h-screen">
@@ -972,13 +1900,29 @@ END:VCALENDAR`;
                         </div>
                         <div class="mb-4">${this.renderFilterHeader('fuel', filter)}</div>
 
+                        ${ui.renderSearchPanel({
+                            searchValue: store.pageFilters.fuelSearch,
+                            onSearchInput: "ui.onSearchInput('fuel','fuelSearch',this.value)",
+                            onClearSearch: "ui.clearSearch('fuel','fuelSearch')",
+                            placeholder: "Search notes/location...",
+                            fromValue: store.pageFilters.fuelFrom,
+                            toValue: store.pageFilters.fuelTo,
+                            onFromChange: "store.pageFilters.fuelFrom=this.value;ui.resetPageLimit('fuel');ui.render()",
+                            onToChange: "store.pageFilters.fuelTo=this.value;ui.resetPageLimit('fuel');ui.render()",
+                            onClearRange: "store.pageFilters.fuelFrom='';store.pageFilters.fuelTo='';ui.resetPageLimit('fuel');ui.render()",
+                            chips: [
+                                { label: "Full", active: !!fuelFlags.full, onClick: "store.pageFilters.fuelFlags={...store.pageFilters.fuelFlags, full: !store.pageFilters.fuelFlags.full};ui.resetPageLimit('fuel');ui.render()" },
+                                { label: "Partial", active: !!fuelFlags.partial, onClick: "store.pageFilters.fuelFlags={...store.pageFilters.fuelFlags, partial: !store.pageFilters.fuelFlags.partial};ui.resetPageLimit('fuel');ui.render()" }
+                            ]
+                        })}
+
                         <div class="grid grid-cols-2 gap-3 mb-6">
                             <div class="theme-bg-card p-3 rounded-xl card-shadow border-l-4 border-teal-500">
                                 <div class="text-[10px] theme-text-sub uppercase tracking-wider">${utils.t('efficiency')}</div>
                                 <div class="text-lg font-bold text-teal-600">${stats.efficiency} <span class="text-[10px] font-normal">${utils.getEfficiencyLabel()}</span></div>
                             </div>
                             <div class="theme-bg-card p-3 rounded-xl card-shadow border-l-4 border-blue-500">
-                                <div class="text-[10px] theme-text-sub uppercase tracking-wider">${utils.t('cost_km')}</div>
+                                <div class="text-[10px] theme-text-sub uppercase tracking-wider">${utils.getCostPerDistLabel()}</div>
                                 <div class="text-lg font-bold text-blue-600">${stats.costKm}</div>
                             </div>
                              <div class="theme-bg-card p-3 rounded-xl card-shadow">
@@ -992,7 +1936,8 @@ END:VCALENDAR`;
                         </div>
 
                         <div class="space-y-3 pb-24">
-                            ${filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`}
+                            ${visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`}
+                            ${filteredLogs.length > visibleLogs.length ? ui.renderLoadMore('fuel', visibleLogs.length, filteredLogs.length) : ''}
                         </div>
                         <button onclick="ui.openAddFuel()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full grad-teal text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
                             <span class="material-icons">add</span>
@@ -1002,20 +1947,39 @@ END:VCALENDAR`;
             },
             
             renderMaintenance(vehicle) {
-                const logs = store.getVehicleLogs(); 
-                const maintLogs = logs.filter(l => l.type !== 'fuel' && l.type !== 'parking');
                 const filter = store.pageFilters.maintenance;
+                const view = store.pageFilters.maintenanceView || 'all';
+                const selectedTypes = store.pageFilters.maintenanceTypes || [];
                 
-                let filteredLogs = utils.filterLogs(maintLogs, filter);
-                const query = store.pageFilters.maintenanceSearch.toLowerCase();
-                if (query) {
-                    filteredLogs = filteredLogs.filter(l => 
-                        (l.notes && l.notes.toLowerCase().includes(query)) ||
-                        utils.t(l.type).toLowerCase().includes(query) ||
-                        (l.location && l.location.toLowerCase().includes(query))
-                    );
-                }
+                const query = (store.pageFilters.maintenanceSearch || '').toLowerCase();
+                const from = store.pageFilters.maintenanceFrom || '';
+                const to = store.pageFilters.maintenanceTo || '';
+                const typeKey = (selectedTypes || []).slice().sort().join(',');
+                const filteredLogs = store._getCachedFiltered(
+                    `maintenance|${store.data.settings.language || 'en'}|${filter.mode}:${filter.value}|${from}|${to}|${typeKey}|${query}`,
+                    () => {
+                        const logs = store.getVehicleLogs();
+                        let out = logs.filter(l => l.type !== 'fuel' && l.type !== 'parking');
+                        out = utils.filterLogs(out, filter);
+                        out = utils.filterByDateRange(out, from, to);
+                        if (selectedTypes.length) out = out.filter(l => selectedTypes.includes(l.type));
+                        if (query) {
+                            out = out.filter(l => {
+                                if (store.getLogSearchText(l).includes(query)) return true;
+                                if ((l.tireBrand || '').toLowerCase().includes(query)) return true;
+                                return utils.t(l.type).toLowerCase().includes(query);
+                            });
+                        }
+                        return out;
+                    }
+                );
+                const limit = ui.getPageLimit('maintenance');
+                const visibleLogs = view === 'all' ? filteredLogs.slice(0, limit) : filteredLogs;
                 const stats = utils.calculateStats(filteredLogs, 'maintenance');
+                const tireTimeline = utils.getTireTimeline(vehicle);
+                const tireTimelineFiltered = query
+                    ? tireTimeline.filter(t => (t.lastReplace?.brand || '').toLowerCase().includes(query) || (t.currentPos && utils.t('tire_' + t.currentPos).toLowerCase().includes(query)))
+                    : tireTimeline;
 
                 return `
                     <div class="px-6 pt-safe min-h-screen">
@@ -1024,10 +1988,32 @@ END:VCALENDAR`;
                         </div>
                         <div class="mb-4">${this.renderFilterHeader('maintenance', filter)}</div>
                         
-                        <div class="mb-4 relative">
-                            <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
-                            <input type="text" placeholder="Search logs..." value="${store.pageFilters.maintenanceSearch}" oninput="store.pageFilters.maintenanceSearch=this.value;ui.render()" class="w-full pl-10 pr-4 py-2 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
+                        ${ui.renderSearchPanel({
+                            searchValue: store.pageFilters.maintenanceSearch,
+                            onSearchInput: "ui.onSearchInput('maintenance','maintenanceSearch',this.value)",
+                            onClearSearch: "ui.clearSearch('maintenance','maintenanceSearch')",
+                            placeholder: "Search notes/location/brand...",
+                            fromValue: store.pageFilters.maintenanceFrom,
+                            toValue: store.pageFilters.maintenanceTo,
+                            onFromChange: "store.pageFilters.maintenanceFrom=this.value;ui.resetPageLimit('maintenance');ui.render()",
+                            onToChange: "store.pageFilters.maintenanceTo=this.value;ui.resetPageLimit('maintenance');ui.render()",
+                            onClearRange: "store.pageFilters.maintenanceFrom='';store.pageFilters.maintenanceTo='';ui.resetPageLimit('maintenance');ui.render()"
+                        })}
+
+                        <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 mb-3">
+                            <button onclick="store.pageFilters.maintenanceView='all'; ui.resetPageLimit('maintenance'); ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='all'?'bg-white dark:bg-slate-700 shadow':''}">All</button>
+                            <button onclick="store.pageFilters.maintenanceView='tires'; ui.resetPageLimit('maintenance'); ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='tires'?'bg-white dark:bg-slate-700 shadow':''}">${utils.t('tire_replace')}</button>
                         </div>
+
+                        ${view === 'all' ? `
+                            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
+                                <button onclick="store.pageFilters.maintenanceTypes=[]; ui.resetPageLimit('maintenance'); ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${selectedTypes.length ? 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub' : 'bg-teal-600 text-white border-teal-600'}">All</button>
+                                ${['service','repair','tire_replace','tire_rotation','periodic_maintenance','car_wash','car_accessories','fine','license','insurance','registration'].map(t => {
+                                    const active = selectedTypes.includes(t);
+                                    return `<button onclick="const s=store.pageFilters.maintenanceTypes||[]; store.pageFilters.maintenanceTypes = s.includes('${t}') ? s.filter(x=>x!=='${t}') : [...s,'${t}']; ui.resetPageLimit('maintenance'); ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${active ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/20' : 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub'}">${utils.t(t)}</button>`;
+                                }).join('')}
+                            </div>
+                        ` : ''}
 
                         <div class="theme-bg-card p-4 rounded-2xl card-shadow mb-6 flex justify-between items-center">
                             <div>
@@ -1040,7 +2026,50 @@ END:VCALENDAR`;
                         </div>
 
                         <div class="space-y-3 pb-24">
-                            ${filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`}
+                            ${view === 'tires'
+                                ? (tireTimelineFiltered.length
+                                    ? tireTimelineFiltered.map(t => `
+                                        <div class="theme-bg-card p-4 rounded-2xl card-shadow">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <div class="text-xs theme-text-sub font-bold">${t.currentPos ? utils.t('tire_' + t.currentPos) : utils.t('tire_positions')}</div>
+                                                    <div class="text-lg font-black theme-text-heading">${t.lastReplace?.brand || utils.t('tire_not_set')}</div>
+                                                    <div class="text-xs theme-text-sub mt-0.5">${t.lastReplace ? `${utils.formatDate(t.lastReplace.date)} • ${t.lastReplace.odometer} ${utils.getDistUnit()}` : '&nbsp;'}</div>
+                                                </div>
+                                                <div class="flex gap-2">
+                                                    ${t.lastReplace?.logId
+                                                        ? `<button onclick="ui.openAddService('${t.lastReplace.logId}')" class="text-slate-300 hover:text-sky-500"><span class="material-icons text-xl">edit</span></button>`
+                                                        : `<button onclick="ui.openAddService(null,'tire_replace'); setTimeout(() => { const el=document.getElementById('l_tire_pos'); if (el && '${t.currentPos || ''}') el.value='${t.currentPos || 'front_left'}'; }, 60);" class="text-xs font-bold text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-1 rounded-lg">+ ${utils.t('tire_replace')}</button>`
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="mt-3 space-y-2">
+                                                ${(t.events || []).slice().sort((a,b) => (parseFloat(b.odometer)||0) - (parseFloat(a.odometer)||0)).slice(0, 8).map(ev => {
+                                                    if (ev.kind === 'replace') {
+                                                        return `<div class="flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">
+                                                            <div class="flex items-center gap-2">
+                                                                <span class="material-icons text-slate-400 text-sm">tire_repair</span>
+                                                                <span class="font-bold theme-text-heading">${utils.t('tire_replace')}</span>
+                                                                <span class="theme-text-sub">${utils.t('tire_' + ev.pos)}</span>
+                                                            </div>
+                                                            <div class="theme-text-sub">${ev.odometer} ${utils.getDistUnit()}</div>
+                                                        </div>`;
+                                                    }
+                                                    return `<div class="flex items-center justify-between text-xs bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="material-icons text-slate-400 text-sm">sync_alt</span>
+                                                            <span class="font-bold theme-text-heading">${utils.t('tire_rotation')}</span>
+                                                            <span class="theme-text-sub">${utils.t('tire_' + ev.from)} → ${utils.t('tire_' + ev.to)}</span>
+                                                        </div>
+                                                        <div class="theme-text-sub">${ev.odometer} ${utils.getDistUnit()}</div>
+                                                    </div>`;
+                                                }).join('') || `<div class="text-center theme-text-sub text-sm py-3">No tire events</div>`}
+                                            </div>
+                                        </div>
+                                    `).join('')
+                                    : `<div class="text-center theme-text-sub py-12">No tire records found</div>`)
+                                : (visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`)}
+                            ${view === 'all' && filteredLogs.length > visibleLogs.length ? ui.renderLoadMore('maintenance', visibleLogs.length, filteredLogs.length) : ''}
                         </div>
                         <button onclick="ui.openAddService()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-white dark:bg-slate-700 theme-text-heading shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50 border theme-border">
                             <span class="material-icons">add</span>
@@ -1052,8 +2081,24 @@ END:VCALENDAR`;
             renderParking(vehicle) {
                 const logs = store.getVehicleLogs('parking');
                 const filter = store.pageFilters.parking;
-                const filteredLogs = utils.filterLogs(logs, filter);
+                const q = (store.pageFilters.parkingSearch || '').toLowerCase();
+                const parkingFlags = store.pageFilters.parkingFlags || { withLocation: false, withNotes: false };
+                const from = store.pageFilters.parkingFrom || '';
+                const to = store.pageFilters.parkingTo || '';
+                const filteredLogs = store._getCachedFiltered(
+                    `parking|${store.data.settings.language || 'en'}|${filter.mode}:${filter.value}|${from}|${to}|${q}|${parkingFlags.withLocation ? 1 : 0}${parkingFlags.withNotes ? 1 : 0}`,
+                    () => {
+                        let out = utils.filterLogs(logs, filter);
+                        out = utils.filterByDateRange(out, from, to);
+                        if (q) out = out.filter(l => store.getLogSearchText(l).includes(q));
+                        if (parkingFlags.withLocation) out = out.filter(l => !!l.location);
+                        if (parkingFlags.withNotes) out = out.filter(l => !!l.notes);
+                        return out;
+                    }
+                );
                 const stats = utils.calculateStats(filteredLogs, 'parking');
+                const limit = ui.getPageLimit('parking');
+                const visibleLogs = filteredLogs.slice(0, limit);
                 
                 return `
                      <div class="px-6 pt-safe min-h-screen">
@@ -1061,6 +2106,22 @@ END:VCALENDAR`;
                              <h1 class="text-3xl font-black text-blue-600">${utils.t('parking')}</h1>
                         </div>
                         <div class="mb-4">${this.renderFilterHeader('parking', filter)}</div>
+
+                        ${ui.renderSearchPanel({
+                            searchValue: store.pageFilters.parkingSearch,
+                            onSearchInput: "ui.onSearchInput('parking','parkingSearch',this.value)",
+                            onClearSearch: "ui.clearSearch('parking','parkingSearch')",
+                            placeholder: "Search notes/location...",
+                            fromValue: store.pageFilters.parkingFrom,
+                            toValue: store.pageFilters.parkingTo,
+                            onFromChange: "store.pageFilters.parkingFrom=this.value;ui.resetPageLimit('parking');ui.render()",
+                            onToChange: "store.pageFilters.parkingTo=this.value;ui.resetPageLimit('parking');ui.render()",
+                            onClearRange: "store.pageFilters.parkingFrom='';store.pageFilters.parkingTo='';ui.resetPageLimit('parking');ui.render()",
+                            chips: [
+                                { label: "Has Location", active: !!parkingFlags.withLocation, onClick: "store.pageFilters.parkingFlags={...store.pageFilters.parkingFlags, withLocation: !store.pageFilters.parkingFlags.withLocation};ui.resetPageLimit('parking');ui.render()" },
+                                { label: "Has Notes", active: !!parkingFlags.withNotes, onClick: "store.pageFilters.parkingFlags={...store.pageFilters.parkingFlags, withNotes: !store.pageFilters.parkingFlags.withNotes};ui.resetPageLimit('parking');ui.render()" }
+                            ]
+                        })}
                         
                         <div class="theme-bg-card p-4 rounded-2xl card-shadow mb-6">
                              <div class="text-xs theme-text-sub uppercase tracking-wider">${utils.t('parking_fee')}</div>
@@ -1068,7 +2129,8 @@ END:VCALENDAR`;
                         </div>
                         
                         <div class="space-y-3 pb-24">
-                            ${filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records yet</div>`}
+                            ${visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records yet</div>`}
+                            ${filteredLogs.length > visibleLogs.length ? ui.renderLoadMore('parking', visibleLogs.length, filteredLogs.length) : ''}
                         </div>
                         <button onclick="ui.openAddParking()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
                             <span class="material-icons">add</span>
@@ -1082,14 +2144,14 @@ END:VCALENDAR`;
                 const filter = store.pageFilters.analytics;
                 const filteredLogs = utils.filterLogs(logs, filter);
                 
-                const fuelCost = filteredLogs.filter(l => l.type === 'fuel').reduce((s,l) => s + parseFloat(l.cost), 0);
-                const serviceCost = filteredLogs.filter(l => !['fuel','parking','fine'].includes(l.type)).reduce((s,l) => s + parseFloat(l.cost), 0);
-                const parkingCost = filteredLogs.filter(l => l.type === 'parking').reduce((s,l) => s + parseFloat(l.cost), 0);
-                const fineCost = filteredLogs.filter(l => l.type === 'fine').reduce((s,l) => s + parseFloat(l.cost), 0);
+                const fuelCost = filteredLogs.filter(l => l.type === 'fuel').reduce((s,l) => s + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
+                const serviceCost = filteredLogs.filter(l => !['fuel','parking','fine'].includes(l.type)).reduce((s,l) => s + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
+                const parkingCost = filteredLogs.filter(l => l.type === 'parking').reduce((s,l) => s + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
+                const fineCost = filteredLogs.filter(l => l.type === 'fine').reduce((s,l) => s + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
                 const total = fuelCost + serviceCost + parkingCost + fineCost;
                 
                 const fixedLogs = filteredLogs.filter(l => ['license', 'insurance', 'registration'].includes(l.type));
-                const fixedTotal = fixedLogs.reduce((sum, l) => sum + parseFloat(l.cost), 0);
+                const fixedTotal = fixedLogs.reduce((sum, l) => sum + (Number.isFinite(parseFloat(l.cost)) ? parseFloat(l.cost) : 0), 0);
                 
                 let pieHtml = '';
                 if (total > 0) {
@@ -1191,10 +2253,14 @@ END:VCALENDAR`;
                                 </div>
                             `).join('')}
                             <button onclick="ui.openAddVehicle()" class="w-full mt-4 py-2 border border-dashed border-teal-500 text-teal-600 rounded-xl text-sm font-bold hover:bg-teal-50 dark:hover:bg-teal-900/20 transition">+ ${utils.t('add_vehicle')}</button>
+                            <button onclick="ui.addDemoCar()" class="w-full mt-2 py-2 border border-dashed theme-border theme-text-heading rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition">${utils.t('add_demo_car')}</button>
                         </div>
                         
                         <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 card-shadow mb-6">
-                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">${utils.t('reminder_settings')}</div>
+                             <div class="flex items-center justify-between mb-4">
+                                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">${utils.t('reminder_settings')}</div>
+                                 <button onclick="router.navigate('reminders')" class="text-xs font-bold text-slate-500 underline">${utils.t('reminder_center')}</button>
+                             </div>
                              ${['license','insurance','registration'].map(type => {
                                  const conf = settings.reminders?.[type] || { enabled: true, days: 30 };
                                  return `
@@ -1236,6 +2302,23 @@ END:VCALENDAR`;
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Tire Replacement Interval -->
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 card-shadow mb-6">
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">${utils.t('tire_replace')}</div>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_interval_dist')} (${utils.getDistUnit()})</label>
+                                    <input type="number" min="0" step="100" value="${settings.tireReplaceDist ?? 40000}" onchange="store.data.settings.tireReplaceDist = parseInt(this.value)||0; store.saveData(); ui.render()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700 theme-text-heading text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_interval_time')}</label>
+                                    <select onchange="store.data.settings.tireReplaceYears = parseInt(this.value)||0; store.saveData(); ui.render()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700 theme-text-heading text-sm">
+                                        ${[0,2,3,4,5,6].map(y => `<option value="${y}" ${parseInt(settings.tireReplaceYears)==y?'selected':''}>${y===0 ? utils.t('int_none') : y}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         
                         <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 card-shadow mb-6">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">App Settings</div>
@@ -1246,6 +2329,12 @@ END:VCALENDAR`;
                                         <button onclick="store.data.settings.units='metric';store.saveData();ui.render()" class="flex-1 py-1 text-xs rounded-md ${settings.units==='metric'?'bg-white dark:bg-slate-600 shadow':''}">${utils.t('metric')}</button>
                                         <button onclick="store.data.settings.units='imperial';store.saveData();ui.render()" class="flex-1 py-1 text-xs rounded-md ${settings.units==='imperial'?'bg-white dark:bg-slate-600 shadow':''}">${utils.t('imperial')}</button>
                                     </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs theme-text-sub block mb-1">${utils.t('pressure_unit')}</label>
+                                    <select onchange="store.data.settings.pressureUnit=this.value;store.saveData();ui.render()" class="w-full p-2 rounded-lg text-sm">
+                                        ${['psi','kPa','bar'].map(u => `<option value="${u}" ${(settings.pressureUnit||utils.getPressureUnit())===u?'selected':''}>${utils.t('unit_'+u.toLowerCase())}</option>`).join('')}
+                                    </select>
                                 </div>
                                 <div>
                                     <label class="text-xs theme-text-sub block mb-1">${utils.t('currency')}</label>
@@ -1274,7 +2363,7 @@ END:VCALENDAR`;
                             <button onclick="ui.openAboutModal()" class="text-teal-600 text-sm font-bold flex items-center justify-center gap-2 opacity-80 hover:opacity-100">
                                 <span class="material-icons">info</span> ${utils.t('about')}
                             </button>
-                            <div class="text-[10px] theme-text-sub mt-2">v2.1 IndexedDB • Built for iOS</div>
+                            <div class="text-[10px] theme-text-sub mt-2">v3.0 IndexedDB • Built for iOS</div>
                         </div>
                     </div>
                 `;
@@ -1297,6 +2386,27 @@ END:VCALENDAR`;
                     icon = 'local_police';
                     colorClass = 'bg-red-50 text-red-600';
                     if (log.notes) title = utils.t(log.notes.split(',')[0]); // Use first tag as title
+                } else if (log.type === 'tire_replace') {
+                    icon = 'tire_repair';
+                    colorClass = 'bg-slate-50 text-slate-700';
+                    const posLabel = log.tirePosition ? utils.t('tire_' + log.tirePosition) : '';
+                    const brand = log.tireBrand ? ` • ${log.tireBrand}` : '';
+                    title = `${utils.t('tire_replace')}${posLabel ? ' • ' + posLabel : ''}${brand}`;
+                } else if (log.type === 'tire_rotation') {
+                    icon = 'sync_alt';
+                    colorClass = 'bg-slate-50 text-slate-700';
+                    const swaps = Array.isArray(log.tireSwaps) && log.tireSwaps.length
+                        ? log.tireSwaps
+                        : (log.tireSwapA && log.tireSwapB ? [{ a: log.tireSwapA, b: log.tireSwapB }] : []);
+                    const swapText = swaps
+                        .map(s => {
+                            const a = s?.a ? utils.t('tire_' + s.a) : '';
+                            const b = s?.b ? utils.t('tire_' + s.b) : '';
+                            return a && b ? `${a} ↔ ${b}` : '';
+                        })
+                        .filter(Boolean)
+                        .join(', ');
+                    title = `${utils.t('tire_rotation')}${swapText ? ` • ${swapText}` : ''}`;
                 } else if (['license', 'insurance', 'registration'].includes(log.type)) {
                     icon = 'assignment';
                     colorClass = 'bg-purple-50 text-purple-600';
@@ -1316,7 +2426,12 @@ END:VCALENDAR`;
                 if (log.type === 'fuel') {
                     const allFuel = store.getVehicleLogs('fuel');
                     const idx = allFuel.findIndex(l => l.id === log.id);
-                    let l100 = '--', costKm = '--';
+                    let effVal = '--', costKm = '--';
+                    const v = store.getActiveVehicle();
+                    const isImperial = store.data.settings.units === 'imperial';
+                    const isEV = v && v.fuelUnit === 'kWh';
+                    const distUnit = utils.getDistUnit();
+                    const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (isImperial ? 'Gal' : 'L');
                     
                     // Logic to span over Partial logs
                     if (!log.isPartial) {
@@ -1342,11 +2457,14 @@ END:VCALENDAR`;
                              // Current log liters + accumulated partials
                              // Distance is from Prev Full to Current Full
                              const dist = log.odometer - prevLog.odometer;
-                             const totalLiters = parseFloat(log.liters) + accumulatedLiters;
+                             const totalFuel = parseFloat(log.liters) + accumulatedLiters;
                              const totalCost = parseFloat(log.cost) + accumulatedCost;
                              
                              if (dist > 0) {
-                                 l100 = ((totalLiters / dist) * 100).toFixed(1);
+                                 if (totalFuel > 0) {
+                                     const eff = utils.calcEfficiencyValue(totalFuel, dist, fuelUnit, distUnit);
+                                     if (eff !== null) effVal = eff.toFixed(1);
+                                 }
                                  costKm = (totalCost / dist).toFixed(2);
                              }
                          }
@@ -1356,10 +2474,10 @@ END:VCALENDAR`;
                         <div class="mt-3 pt-3 border-t theme-border flex justify-between text-xs">
                             <div>
                                 <div class="theme-text-sub mb-0.5 uppercase tracking-wider text-[10px]">${utils.getEfficiencyLabel()}</div>
-                                <div class="font-bold text-teal-600 text-sm">${l100}</div>
+                                <div class="font-bold text-teal-600 text-sm">${effVal}</div>
                             </div>
                              <div class="text-right">
-                                <div class="theme-text-sub mb-0.5 uppercase tracking-wider text-[10px]">${utils.t('cost_km')}</div>
+                                <div class="theme-text-sub mb-0.5 uppercase tracking-wider text-[10px]">${utils.getCostPerDistLabel()}</div>
                                 <div class="font-bold text-teal-600 text-sm">${utils.formatCurrency(costKm)}</div>
                             </div>
                         </div>
@@ -1376,6 +2494,14 @@ END:VCALENDAR`;
                     const unit = vehicle ? (vehicle.fuelUnit || 'L') : 'L';
                     const ppu = (parseFloat(log.cost) / parseFloat(log.liters)).toFixed(2);
                     extraInfoHtml = `<div class="text-xs theme-text-sub mt-0.5"><span class="font-semibold theme-text-main">${log.liters} ${unit}</span> <span class="opacity-75">@ ${store.data.settings.currency}${ppu}/${unit}</span></div>`;
+                } else if (log.type === 'tire_replace') {
+                    const parts = [];
+                    if (log.tireTread) parts.push(`${utils.t('tire_tread')}: ${log.tireTread}`);
+                    const p = utils.formatPressureFromLog(log);
+                    if (p) parts.push(`${utils.t('tire_pressure')}: ${p}`);
+                    if (log.tireAlignment) parts.push(utils.t('tire_alignment'));
+                    if (log.tireBalancing) parts.push(utils.t('tire_balancing'));
+                    if (parts.length) extraInfoHtml = `<div class="text-xs theme-text-sub mt-0.5">${parts.join(' • ')}</div>`;
                 }
 
                 return `
@@ -1387,7 +2513,7 @@ END:VCALENDAR`;
                                 </div>
                                 <div>
                                     <div class="font-bold text-sm theme-text-heading">${date}</div>
-                                    <div class="text-xs theme-text-heading font-semibold mt-0.5">${title} ${log.isPartial ? '<span class="text-amber-500 text-[10px] border border-amber-500 px-1 rounded ml-1">PARTIAL</span>' : ''}</div>
+                                    <div class="text-xs theme-text-heading font-semibold mt-0.5">${title} ${log.isPartial ? `<span class="text-amber-500 text-[10px] border border-amber-500 px-1 rounded ml-1">${utils.t('partial')}</span>` : ''}</div>
                                     <div class="text-xs theme-text-sub mt-0.5">${log.odometer} ${utils.getDistUnit()}</div>
                                     ${extraInfoHtml}
                                     ${locHtml}
@@ -1447,7 +2573,7 @@ END:VCALENDAR`;
             },
 
             openAddVehicle(id = null) {
-                const v = id ? store.data.vehicles.find(v => v.id === id) : { make: '', model: '', year: new Date().getFullYear(), currentOdometer: '', color: 'teal', type: 'sedan', fuelUnit: 'L' };
+                const v = id ? store.data.vehicles.find(v => v.id === id) : { make: '', model: '', year: new Date().getFullYear(), currentOdometer: '', color: 'teal', type: 'sedan', fuelUnit: 'L', driveType: 'fwd' };
                 const colors = ['teal','blue','red','black','white','yellow','purple','green','orange','brown','grey','pink','cyan'];
                 
                 this.openModal(`
@@ -1491,6 +2617,15 @@ END:VCALENDAR`;
                              </div>
                         </div>
 
+                        <div>
+                            <label class="text-xs theme-text-sub block mb-1">${utils.t('drive_type')}</label>
+                            <select id="v_drive" class="w-full p-3 rounded-xl text-sm">
+                                <option value="fwd" ${(v.driveType||'fwd')==='fwd'?'selected':''}>${utils.t('drive_fwd')}</option>
+                                <option value="rwd" ${(v.driveType||'fwd')==='rwd'?'selected':''}>${utils.t('drive_rwd')}</option>
+                                <option value="awd" ${(v.driveType||'fwd')==='awd'?'selected':''}>${utils.t('drive_awd')}</option>
+                            </select>
+                        </div>
+
                         <div class="flex gap-3 mt-6">
                             ${id ? `<button onclick="ui.deleteVehicle('${id}')" class="flex-1 bg-red-50 text-red-600 py-3 rounded-xl font-bold">${utils.t('delete')}</button>` : ''}
                             <button onclick="ui.saveVehicle('${id || ''}')" class="flex-1 grad-teal text-white py-3 rounded-xl font-bold shadow-lg">${utils.t('save')}</button>
@@ -1506,13 +2641,14 @@ END:VCALENDAR`;
                 if (!make || !model) return alert('Make and Model are required');
                 
                 const vehicle = {
-                    id: id || Date.now().toString(),
+                    id: id || utils.newId(),
                     make, model,
                     year: document.getElementById('v_year').value,
                     currentOdometer: parseInt(document.getElementById('v_odo').value) || 0,
                     color: document.querySelector('input[name="v_color"]:checked').value,
                     type: document.getElementById('v_type').value,
-                    fuelUnit: document.getElementById('v_unit').value
+                    fuelUnit: document.getElementById('v_unit').value,
+                    driveType: document.getElementById('v_drive').value
                 };
                 
                 if (id) await store.updateVehicle(vehicle);
@@ -1548,8 +2684,117 @@ END:VCALENDAR`;
                 }, 50);
             },
 
+            async addDemoCar() {
+                const existing = store.data.vehicles.find(v => v.make === 'DEMO' && v.model === 'Car');
+                if (existing) {
+                    store.data.settings.activeVehicleId = existing.id;
+                    await store.saveData();
+                    this.render();
+                    return;
+                }
+
+                const now = new Date();
+                const isoDaysAgo = (daysAgo) => {
+                    const d = new Date(now);
+                    d.setDate(d.getDate() - daysAgo);
+                    return d.toISOString().slice(0, 10);
+                };
+                const isoDaysFromNow = (daysFromNow) => {
+                    const d = new Date(now);
+                    d.setDate(d.getDate() + daysFromNow);
+                    return d.toISOString().slice(0, 10);
+                };
+
+                const vehicleId = utils.newId();
+                const demoVehicle = {
+                    id: vehicleId,
+                    make: 'DEMO',
+                    model: 'Car',
+                    year: now.getFullYear(),
+                    currentOdometer: 24222,
+                    color: 'teal',
+                    type: 'sedan',
+                    fuelUnit: (store.data.settings.units === 'imperial') ? 'Gal' : 'L',
+                    driveType: 'fwd'
+                };
+
+                await store.addVehicle(demoVehicle);
+                store.data.settings.activeVehicleId = vehicleId;
+
+                if (!Number.isFinite(parseInt(store.data.settings.maintenanceDist))) store.data.settings.maintenanceDist = '5000';
+                if (!Number.isFinite(parseInt(store.data.settings.maintenanceTime))) store.data.settings.maintenanceTime = '6';
+                if (!store.data.settings.tireReplaceDist) store.data.settings.tireReplaceDist = 40000;
+                if (!store.data.settings.tireReplaceYears) store.data.settings.tireReplaceYears = 4;
+                await store.saveData();
+
+                const add = async (log) => store.addLog({ id: utils.newId(), vehicleId, ...log });
+
+                const demoFuelNotes = store.data.settings.language === 'zh' ? '示範：加油記錄' : 'Demo: fuel log';
+                await add({ type: 'fuel', date: isoDaysAgo(150), odometer: 18000, liters: '42.0', cost: '560', location: 'Shell', notes: demoFuelNotes, isPartial: false });
+                await add({ type: 'fuel', date: isoDaysAgo(132), odometer: 18620, liters: '10.0', cost: '135', location: 'Shell', notes: store.data.settings.language === 'zh' ? '示範：Partial' : 'Demo: partial', isPartial: true });
+                await add({ type: 'fuel', date: isoDaysAgo(120), odometer: 19010, liters: '39.5', cost: '520', location: 'Esso', notes: demoFuelNotes, isPartial: false });
+                await add({ type: 'fuel', date: isoDaysAgo(90), odometer: 20180, liters: '41.2', cost: '545', location: 'Caltex', notes: demoFuelNotes, isPartial: false });
+                await add({ type: 'fuel', date: isoDaysAgo(60), odometer: 21480, liters: '40.1', cost: '532', location: 'Caltex', notes: demoFuelNotes, isPartial: false });
+                await add({ type: 'fuel', date: isoDaysAgo(20), odometer: 23390, liters: '38.6', cost: '512', location: 'Shell', notes: demoFuelNotes, isPartial: false });
+
+                await add({ type: 'parking', date: isoDaysAgo(18), cost: '48', location: 'Central', notes: store.data.settings.language === 'zh' ? '示範：停車場' : 'Demo: parking' });
+                await add({ type: 'parking', date: isoDaysAgo(7), cost: '36', location: 'Mall', notes: store.data.settings.language === 'zh' ? '示範：短泊' : 'Demo: short stay' });
+
+                await add({ type: 'service', date: isoDaysAgo(75), odometer: 20600, cost: '880', location: 'Garage', notes: store.data.settings.language === 'zh' ? '示範：更換機油' : 'Demo: oil change' });
+                await add({ type: 'repair', date: isoDaysAgo(35), odometer: 22400, cost: '320', location: 'Garage', notes: store.data.settings.language === 'zh' ? '示範：更換雨刷' : 'Demo: wiper blades' });
+                await add({ type: 'car_wash', date: isoDaysAgo(12), odometer: 23500, cost: '80', location: 'Car Wash', notes: store.data.settings.language === 'zh' ? '示範：洗車' : 'Demo: car wash' });
+                await add({ type: 'car_accessories', date: isoDaysAgo(5), odometer: 24050, cost: '199', location: '', notes: store.data.settings.language === 'zh' ? '示範：配件' : 'Demo: accessories' });
+                await add({ type: 'periodic_maintenance', date: isoDaysAgo(160), odometer: 17500, cost: '0', location: '', notes: store.data.settings.language === 'zh' ? '示範：定期保養提醒' : 'Demo: periodic maintenance' });
+
+                await add({ type: 'fine', date: isoDaysAgo(28), odometer: 23000, cost: '450', location: '', notes: 'speeding, demo' });
+
+                await add({ type: 'license', date: isoDaysAgo(10), odometer: 23800, cost: '600', expiryDate: isoDaysFromNow(14), location: '', notes: '' });
+                await add({ type: 'insurance', date: isoDaysAgo(9), odometer: 23810, cost: '1200', expiryDate: isoDaysFromNow(25), location: '', notes: '' });
+                await add({ type: 'registration', date: isoDaysAgo(8), odometer: 23820, cost: '300', expiryDate: isoDaysFromNow(7), location: '', notes: '' });
+
+                const mkTireReplace = async (pos, daysAgo, odo, brand, treadMm, pressureKpa) => {
+                    await add({
+                        type: 'tire_replace',
+                        date: isoDaysAgo(daysAgo),
+                        odometer: odo,
+                        cost: pos === 'front_left' ? '900' : '',
+                        location: '',
+                        notes: store.data.settings.language === 'zh' ? '示範：更換輪胎' : 'Demo: tire replace',
+                        tirePosition: pos,
+                        tireBrand: brand,
+                        tireTread: String(treadMm),
+                        tirePressureKpa: String(pressureKpa),
+                        tireAlignment: pos === 'front_left',
+                        tireBalancing: true,
+                        tireId: utils.newId()
+                    });
+                };
+
+                await mkTireReplace('front_left', 1440, 1200, 'Michelin', 7.0, 240);
+                await mkTireReplace('front_right', 400, 8000, 'Michelin', 6.5, 240);
+                await mkTireReplace('rear_left', 600, 5000, 'Michelin', 6.8, 240);
+                await mkTireReplace('rear_right', 600, 5000, 'Michelin', 6.8, 240);
+
+                await add({
+                    type: 'tire_rotation',
+                    date: isoDaysAgo(55),
+                    odometer: 21600,
+                    cost: '',
+                    location: '',
+                    notes: store.data.settings.language === 'zh' ? '示範：輪胎換位（前後互換）' : 'Demo: tire rotation (front ↔ rear)',
+                    tireSwaps: [{ a: 'front_left', b: 'rear_left' }, { a: 'front_right', b: 'rear_right' }],
+                    tireSwapA: 'front_left',
+                    tireSwapB: 'rear_left'
+                });
+
+                await store.updateVehicle(demoVehicle);
+                this.render();
+            },
+
             openAddFuel(id = null) {
                 const log = id ? store.data.logs.find(l => l.id === id) : { date: new Date().toISOString().slice(0, 10), odometer: store.getActiveVehicle()?.currentOdometer || '', liters: '', cost: '', location: '', notes: '', isPartial: false };
+                const fuelUnit = utils.getFuelUnit();
+                const volLabel = fuelUnit === 'kWh' ? utils.t('kwh') : (fuelUnit === 'Gal' ? utils.t('gallons') : utils.t('liters'));
                 
                 this.openModal(`
                     <h2 class="text-xl font-bold mb-4 theme-text-heading flex items-center gap-2"><span class="material-icons text-teal-600">local_gas_station</span> ${utils.t('add_fuel')}</h2>
@@ -1565,10 +2810,10 @@ END:VCALENDAR`;
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
-                            <div><label class="text-xs theme-text-sub block mb-1">${utils.t('liters')}</label><input id="l_liters" type="number" step="0.01" value="${log.liters}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('vol')"></div>
-                            <div><label class="text-xs theme-text-sub block mb-1">${utils.t('cost')}</label><input id="l_cost" type="number" step="0.01" value="${log.cost}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('cost')"></div>
+                            <div><label class="text-xs theme-text-sub block mb-1">${volLabel}</label><input id="l_liters" type="number" step="0.01" value="${log.liters}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('vol')"></div>
+                            <div><label class="text-xs theme-text-sub block mb-1">${utils.t('price_unit')}</label><input id="l_price" type="number" step="0.01" class="w-full p-3 rounded-xl bg-slate-50" oninput="ui.calcFuel('price')"></div>
                         </div>
-                        <div><label class="text-xs theme-text-sub block mb-1">${utils.t('price_unit')}</label><input id="l_price" type="number" step="0.01" class="w-full p-3 rounded-xl bg-slate-50" oninput="ui.calcFuel('price')"></div>
+                        <div><label class="text-xs theme-text-sub block mb-1">${utils.t('cost')}</label><input id="l_cost" type="number" step="0.01" value="${log.cost}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('cost')"></div>
                         
                         <div class="flex items-center gap-2 bg-amber-50 p-3 rounded-xl">
                             <input type="checkbox" id="l_partial" class="w-5 h-5 text-teal-600 rounded" ${log.isPartial?'checked':''}>
@@ -1588,17 +2833,49 @@ END:VCALENDAR`;
                     </div>
                 `);
                 // Init calc
-                setTimeout(() => ui.calcFuel('cost'), 100);
+                setTimeout(() => ui.calcFuel('init'), 100);
             },
 
             calcFuel(trigger) {
-                const vol = parseFloat(document.getElementById('l_liters').value) || 0;
-                const cost = parseFloat(document.getElementById('l_cost').value) || 0;
-                const price = parseFloat(document.getElementById('l_price').value) || 0;
-                
-                if (trigger === 'cost' && vol > 0 && cost > 0) document.getElementById('l_price').value = (cost / vol).toFixed(3);
-                else if (trigger === 'vol' && price > 0) document.getElementById('l_cost').value = (vol * price).toFixed(2);
-                else if (trigger === 'price' && vol > 0) document.getElementById('l_cost').value = (vol * price).toFixed(2);
+                const litersEl = document.getElementById('l_liters');
+                const costEl = document.getElementById('l_cost');
+                const priceEl = document.getElementById('l_price');
+
+                const vol = parseFloat(litersEl.value) || 0;
+                const cost = parseFloat(costEl.value) || 0;
+                const price = parseFloat(priceEl.value) || 0;
+
+                const compute = (targetKey) => {
+                    if (targetKey === 'liters') {
+                        if (price > 0 && cost > 0) litersEl.value = (cost / price).toFixed(2);
+                    } else if (targetKey === 'cost') {
+                        if (vol > 0 && price > 0) costEl.value = (vol * price).toFixed(2);
+                    } else if (targetKey === 'price') {
+                        if (vol > 0 && cost > 0) priceEl.value = (cost / vol).toFixed(3);
+                    }
+                };
+
+                // Initialize derived field without affecting "last 2 inputs" behavior.
+                if (trigger === 'init') {
+                    if (!price && vol > 0 && cost > 0) compute('price');
+                    else if (!cost && vol > 0 && price > 0) compute('cost');
+                    else if (!vol && cost > 0 && price > 0) compute('liters');
+                    return;
+                }
+
+                // Input logic: last 2 edited fields determine the 3rd.
+                if (!this._fuelCalcLast) this._fuelCalcLast = [];
+                const key = trigger === 'vol' ? 'liters' : trigger; // 'cost' | 'price' | 'liters'
+                this._fuelCalcLast = this._fuelCalcLast.filter(k => k !== key);
+                this._fuelCalcLast.push(key);
+                if (this._fuelCalcLast.length > 2) this._fuelCalcLast = this._fuelCalcLast.slice(-2);
+                if (this._fuelCalcLast.length < 2) return;
+
+                const keys = new Set(this._fuelCalcLast);
+                const targetKey = ['liters', 'cost', 'price'].find(k => !keys.has(k));
+                if (!targetKey) return;
+
+                compute(targetKey);
             },
 
             async submitFuel(id) {
@@ -1606,7 +2883,7 @@ END:VCALENDAR`;
                 if (!odo) return alert('Odometer is required');
                 
                 const log = {
-                    id: id || Date.now().toString(),
+                    id: id || utils.newId(),
                     vehicleId: store.data.settings.activeVehicleId,
                     type: 'fuel',
                     date: document.getElementById('l_date').value,
@@ -1625,8 +2902,29 @@ END:VCALENDAR`;
             },
 
             openAddService(id = null, defaultType = 'service') {
-                const log = id ? store.data.logs.find(l => l.id === id) : { date: new Date().toISOString().slice(0, 10), odometer: store.getActiveVehicle()?.currentOdometer || '', type: defaultType, cost: '', location: '', notes: '', expiryDate: '' };
-                const quickTags = ['oil_change','tire_change','battery','brake','inspection'];
+                const existing = id ? store.data.logs.find(l => l.id === id) : null;
+                const log = existing ? { ...existing } : { date: new Date().toISOString().slice(0, 10), odometer: store.getActiveVehicle()?.currentOdometer || '', type: defaultType, cost: '', location: '', notes: '', expiryDate: '', tirePosition: 'front_left', tireBrand: '', tireTread: '', tirePressureKpa: '', tireAlignment: false, tireBalancing: false, tireSwaps: [{ a: 'front_left', b: 'rear_left' }, { a: 'front_right', b: 'rear_right' }] };
+                if (log.type === 'tire_replace') {
+                    const unit = utils.getPressureUnit();
+                    const kpa = (log.tirePressureKpa !== undefined && log.tirePressureKpa !== null && log.tirePressureKpa !== '')
+                        ? utils.pressureToKpa(log.tirePressureKpa, 'kPa')
+                        : (log.tirePressure ? utils.pressureToKpa(log.tirePressure, 'psi') : null);
+                    const shown = kpa === null ? '' : utils.pressureFromKpa(kpa, unit);
+                    log._tirePressureDisplay = shown === null ? '' : (unit === 'psi' ? shown.toFixed(0) : shown.toFixed(1));
+                }
+                
+                if (log.type === 'tire_rotation') {
+                    const swaps = Array.isArray(log.tireSwaps) && log.tireSwaps.length
+                        ? log.tireSwaps
+                        : (log.tireSwapA && log.tireSwapB ? [{ a: log.tireSwapA, b: log.tireSwapB }] : [{ a: 'front_left', b: 'rear_left' }, { a: 'front_right', b: 'rear_right' }]);
+                    log.tireSwaps = swaps;
+                    log.tireSwapA1 = swaps[0]?.a || 'front_left';
+                    log.tireSwapB1 = swaps[0]?.b || 'rear_left';
+                    log.tireSwapA2 = swaps[1]?.a || 'front_right';
+                    log.tireSwapB2 = swaps[1]?.b || 'rear_right';
+                    log.tireRotPattern = swaps.length >= 2 ? 'front_rear' : 'single';
+                }
+                const quickTags = ['oil_change','tire_change','alignment','air_filter','cabin_filter','spark_plugs','brake_fluid','transmission_fluid','coolant','wiper_blades','battery','brake','inspection'];
                 
                 this.openModal(`
                     <h2 class="text-xl font-bold mb-4 theme-text-heading">${utils.t('add_service')}</h2>
@@ -1634,6 +2932,8 @@ END:VCALENDAR`;
                         <select id="l_type" class="w-full p-3 rounded-xl font-bold bg-slate-100" onchange="ui.handleTypeChange(this.value)">
                             <option value="service" ${log.type==='service'?'selected':''}>${utils.t('service')}</option>
                             <option value="repair" ${log.type==='repair'?'selected':''}>${utils.t('repair')}</option>
+                            <option value="tire_replace" ${log.type==='tire_replace'?'selected':''}>${utils.t('tire_replace')}</option>
+                            <option value="tire_rotation" ${log.type==='tire_rotation'?'selected':''}>${utils.t('tire_rotation')}</option>
                             <option value="periodic_maintenance" ${log.type==='periodic_maintenance'?'selected':''}>${utils.t('periodic_maintenance')}</option>
                             <option value="car_wash" ${log.type==='car_wash'?'selected':''}>${utils.t('car_wash')}</option>
                             <option value="car_accessories" ${log.type==='car_accessories'?'selected':''}>${utils.t('car_accessories')}</option>
@@ -1657,6 +2957,91 @@ END:VCALENDAR`;
                         </div>
                         
                         <div id="loc_note_fields" class="${['license','insurance','registration'].includes(log.type) ? 'hidden' : ''}">
+                            <div id="tire_replace_fields" class="${log.type === 'tire_replace' ? '' : 'hidden'} bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border theme-border mb-3">
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">${utils.t('tire_positions')}</div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_pos')}</label>
+                                        <select id="l_tire_pos" class="w-full p-3 rounded-xl text-sm">
+                                            ${['front_left','front_right','rear_left','rear_right'].map(p => `<option value="${p}" ${log.tirePosition===p?'selected':''}>${utils.t('tire_'+p)}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_brand')}</label>
+                                        <input id="l_tire_brand" type="text" value="${log.tireBrand || ''}" class="w-full p-3 rounded-xl text-sm" placeholder="e.g. Michelin Primacy 4">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 mt-3">
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_tread')}</label>
+                                        <input id="l_tire_tread" type="number" step="0.1" value="${log.tireTread || ''}" class="w-full p-3 rounded-xl text-sm" placeholder="e.g. 6.5">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_pressure')}</label>
+                                        <input id="l_tire_pressure" type="number" step="0.5" value="${log._tirePressureDisplay || ''}" class="w-full p-3 rounded-xl text-sm" placeholder="${utils.getPressureUnit()==='psi'?'e.g. 32':(utils.getPressureUnit()==='bar'?'e.g. 2.3':'e.g. 220')}">
+                                        <div class="text-[10px] theme-text-sub mt-1">${utils.getPressureUnit()}</div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3 mt-3">
+                                    <label class="flex items-center gap-2 text-xs theme-text-heading bg-white/70 dark:bg-slate-800/60 p-2 rounded-xl border theme-border flex-1">
+                                        <input id="l_tire_alignment" type="checkbox" class="w-4 h-4" ${log.tireAlignment ? 'checked' : ''}>
+                                        <span>${utils.t('tire_alignment')}</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 text-xs theme-text-heading bg-white/70 dark:bg-slate-800/60 p-2 rounded-xl border theme-border flex-1">
+                                        <input id="l_tire_balancing" type="checkbox" class="w-4 h-4" ${log.tireBalancing ? 'checked' : ''}>
+                                        <span>${utils.t('tire_balancing')}</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="tire_rotation_fields" class="${log.type === 'tire_rotation' ? '' : 'hidden'} bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border theme-border mb-3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">${utils.t('tire_swap')}</div>
+                                    <select id="l_tire_rot_pattern" onchange="ui.applyTireRotationPattern(this.value)" class="text-xs p-1 rounded bg-white/70 dark:bg-slate-700 border theme-border">
+                                        <option value="front_rear" ${log.tireRotPattern==='front_rear'?'selected':''}>Front ↔ Rear</option>
+                                        <option value="cross" ${log.tireRotPattern==='cross'?'selected':''}>Cross</option>
+                                        <option value="front_swap" ${log.tireRotPattern==='front_swap'?'selected':''}>Front L ↔ Front R</option>
+                                        <option value="rear_swap" ${log.tireRotPattern==='rear_swap'?'selected':''}>Rear L ↔ Rear R</option>
+                                        <option value="single" ${log.tireRotPattern==='single'?'selected':''}>Single Swap</option>
+                                    </select>
+                                </div>
+                                <div class="text-[10px] text-slate-400 mb-2">${utils.t('tire_recommended')}: ${utils.t('drive_' + (store.getActiveVehicle()?.driveType || 'fwd'))}</div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_swap_a')}</label>
+                                        <select id="l_tire_swap_a1" class="w-full p-3 rounded-xl text-sm">
+                                            ${['front_left','front_right','rear_left','rear_right'].map(p => `<option value="${p}" ${(log.tireSwapA1||'front_left')===p?'selected':''}>${utils.t('tire_'+p)}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_swap_b')}</label>
+                                        <select id="l_tire_swap_b1" class="w-full p-3 rounded-xl text-sm">
+                                            ${['front_left','front_right','rear_left','rear_right'].map(p => `<option value="${p}" ${(log.tireSwapB1||'rear_left')===p?'selected':''}>${utils.t('tire_'+p)}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div id="tire_rotation_pair2" class="${log.tireRotPattern==='single' ? 'hidden' : ''} grid grid-cols-2 gap-3 mt-2">
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_swap_a')}</label>
+                                        <select id="l_tire_swap_a2" class="w-full p-3 rounded-xl text-sm">
+                                            ${['front_left','front_right','rear_left','rear_right'].map(p => `<option value="${p}" ${(log.tireSwapA2||'front_right')===p?'selected':''}>${utils.t('tire_'+p)}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_swap_b')}</label>
+                                        <select id="l_tire_swap_b2" class="w-full p-3 rounded-xl text-sm">
+                                            ${['front_left','front_right','rear_left','rear_right'].map(p => `<option value="${p}" ${(log.tireSwapB2||'rear_right')===p?'selected':''}>${utils.t('tire_'+p)}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-2 mt-3">
+                                    <button onclick="ui.applyRecommendedTireRotation('fwd')" class="py-2 rounded-xl text-[10px] font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">FWD</button>
+                                    <button onclick="ui.applyRecommendedTireRotation('rwd')" class="py-2 rounded-xl text-[10px] font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">RWD</button>
+                                    <button onclick="ui.applyRecommendedTireRotation('awd')" class="py-2 rounded-xl text-[10px] font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">AWD</button>
+                                </div>
+                            </div>
                              <div class="relative mb-3">
                                  <label class="text-xs theme-text-sub block mb-1">${utils.t('location')}</label>
                                  <input id="l_loc" type="text" value="${log.location || ''}" class="w-full p-3 rounded-xl pr-10">
@@ -1667,7 +3052,7 @@ END:VCALENDAR`;
                                 ${quickTags.map(t => `<button onclick="document.getElementById('l_notes').value += (document.getElementById('l_notes').value ? ', ' : '') + '${utils.t(t)}'" class="text-[10px] bg-slate-100 px-2 py-1 rounded-full border hover:bg-teal-50 hover:text-teal-600 transition">+ ${utils.t(t)}</button>`).join('')}
                             </div>
                             <div id="fine_tags" class="hidden flex flex-wrap gap-2 mb-2">
-                                ${['parking_ticket','speeding','red_light','illegal_turn'].map(t => `<button onclick="document.getElementById('l_notes').value = '${utils.t(t)}'" class="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded-full border border-red-100 hover:bg-red-100 transition">${utils.t(t)}</button>`).join('')}
+                                ${['parking_ticket','no_parking','speeding','red_light','illegal_turn','bus_lane','seatbelt','phone_use','toll'].map(t => `<button onclick="document.getElementById('l_notes').value = '${utils.t(t)}'" class="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded-full border border-red-100 hover:bg-red-100 transition">${utils.t(t)}</button>`).join('')}
                             </div>
                             
                             <div>
@@ -1689,20 +3074,115 @@ END:VCALENDAR`;
             handleTypeChange(type) {
                 const isDoc = ['license','insurance','registration'].includes(type);
                 const isFine = type === 'fine';
+                const isTireReplace = type === 'tire_replace';
+                const isTireRotation = type === 'tire_rotation';
                 document.getElementById('expiry_field').classList.toggle('hidden', !isDoc);
                 document.getElementById('loc_note_fields').classList.toggle('hidden', isDoc);
                 if (!isDoc) {
                     document.getElementById('quick_tags').classList.toggle('hidden', isFine);
                     document.getElementById('fine_tags').classList.toggle('hidden', !isFine);
+                    const tireReplaceFields = document.getElementById('tire_replace_fields');
+                    if (tireReplaceFields) tireReplaceFields.classList.toggle('hidden', !isTireReplace);
+                    const tireRotationFields = document.getElementById('tire_rotation_fields');
+                    if (tireRotationFields) tireRotationFields.classList.toggle('hidden', !isTireRotation);
                 }
+            },
+
+            applyTireRotationPattern(pattern) {
+                const pair2 = document.getElementById('tire_rotation_pair2');
+                const set = (id, value) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = value;
+                };
+                if (pattern === 'front_rear') {
+                    if (pair2) pair2.classList.remove('hidden');
+                    set('l_tire_swap_a1', 'front_left'); set('l_tire_swap_b1', 'rear_left');
+                    set('l_tire_swap_a2', 'front_right'); set('l_tire_swap_b2', 'rear_right');
+                } else if (pattern === 'cross') {
+                    if (pair2) pair2.classList.remove('hidden');
+                    set('l_tire_swap_a1', 'front_left'); set('l_tire_swap_b1', 'rear_right');
+                    set('l_tire_swap_a2', 'front_right'); set('l_tire_swap_b2', 'rear_left');
+                } else if (pattern === 'front_swap') {
+                    if (pair2) pair2.classList.add('hidden');
+                    set('l_tire_swap_a1', 'front_left'); set('l_tire_swap_b1', 'front_right');
+                } else if (pattern === 'rear_swap') {
+                    if (pair2) pair2.classList.add('hidden');
+                    set('l_tire_swap_a1', 'rear_left'); set('l_tire_swap_b1', 'rear_right');
+                } else { // 'single'
+                    if (pair2) pair2.classList.add('hidden');
+                }
+            },
+
+            applyRecommendedTireRotation(driveType) {
+                const drive = (driveType || (store.getActiveVehicle()?.driveType) || 'fwd').toLowerCase();
+                // Common default recommendations:
+                // - FWD: cross rear -> front, front -> rear same-side
+                // - RWD: cross front -> rear, rear -> front same-side
+                // - AWD: front <-> rear same-side (safe/simple for mixed tires)
+                if (drive === 'rwd') {
+                    document.getElementById('l_tire_rot_pattern').value = 'cross';
+                    this.applyTireRotationPattern('cross');
+                    // swap direction for RWD (front -> rear cross)
+                    const pair2 = document.getElementById('tire_rotation_pair2');
+                    if (pair2) pair2.classList.remove('hidden');
+                    document.getElementById('l_tire_swap_a1').value = 'front_left';
+                    document.getElementById('l_tire_swap_b1').value = 'rear_right';
+                    document.getElementById('l_tire_swap_a2').value = 'front_right';
+                    document.getElementById('l_tire_swap_b2').value = 'rear_left';
+                    return;
+                }
+                if (drive === 'awd') {
+                    document.getElementById('l_tire_rot_pattern').value = 'front_rear';
+                    this.applyTireRotationPattern('front_rear');
+                    return;
+                }
+                // fwd default
+                document.getElementById('l_tire_rot_pattern').value = 'cross';
+                this.applyTireRotationPattern('cross');
+                // swap direction for FWD (rear -> front cross)
+                const pair2 = document.getElementById('tire_rotation_pair2');
+                if (pair2) pair2.classList.remove('hidden');
+                document.getElementById('l_tire_swap_a1').value = 'rear_left';
+                document.getElementById('l_tire_swap_b1').value = 'front_right';
+                document.getElementById('l_tire_swap_a2').value = 'rear_right';
+                document.getElementById('l_tire_swap_b2').value = 'front_left';
             },
 
             async submitService(id) {
                 const type = document.getElementById('l_type').value;
                 const isDoc = ['license','insurance','registration'].includes(type);
+                const isTireReplace = type === 'tire_replace';
+                const isTireRotation = type === 'tire_rotation';
+                const existing = id ? store.data.logs.find(l => l.id === id) : null;
+
+                let tireSwaps;
+                let tireSwapA;
+                let tireSwapB;
+                if (isTireRotation) {
+                    const get = (elId) => document.getElementById(elId)?.value;
+                    const swaps = [];
+                    const addSwap = (a, b) => {
+                        if (!a || !b || a === b) return;
+                        swaps.push({ a, b });
+                    };
+                    addSwap(get('l_tire_swap_a1'), get('l_tire_swap_b1'));
+                    const pair2 = document.getElementById('tire_rotation_pair2');
+                    if (pair2 && !pair2.classList.contains('hidden')) {
+                        addSwap(get('l_tire_swap_a2'), get('l_tire_swap_b2'));
+                    }
+                    if (!swaps.length) return alert('Please select tire swap positions.');
+                    const used = new Set();
+                    for (const s of swaps) {
+                        if (used.has(s.a) || used.has(s.b)) return alert('Each tire position can only appear once per rotation.');
+                        used.add(s.a); used.add(s.b);
+                    }
+                    tireSwaps = swaps;
+                    tireSwapA = swaps[0].a;
+                    tireSwapB = swaps[0].b;
+                }
                 
                 const log = {
-                    id: id || Date.now().toString(),
+                    id: id || utils.newId(),
                     vehicleId: store.data.settings.activeVehicleId,
                     type,
                     date: document.getElementById('l_date').value,
@@ -1710,7 +3190,17 @@ END:VCALENDAR`;
                     cost: document.getElementById('l_cost').value,
                     location: isDoc ? '' : document.getElementById('l_loc').value,
                     notes: isDoc ? '' : document.getElementById('l_notes').value,
-                    expiryDate: isDoc ? document.getElementById('l_expiry').value : ''
+                    expiryDate: isDoc ? document.getElementById('l_expiry').value : '',
+                    tirePosition: isTireReplace ? document.getElementById('l_tire_pos')?.value : undefined,
+                    tireBrand: isTireReplace ? document.getElementById('l_tire_brand')?.value : undefined,
+                    tireTread: isTireReplace ? document.getElementById('l_tire_tread')?.value : undefined,
+                    tirePressureKpa: isTireReplace ? (utils.pressureToKpa(document.getElementById('l_tire_pressure')?.value, utils.getPressureUnit())?.toFixed(1) || '') : undefined,
+                    tireAlignment: isTireReplace ? !!document.getElementById('l_tire_alignment')?.checked : undefined,
+                    tireBalancing: isTireReplace ? !!document.getElementById('l_tire_balancing')?.checked : undefined,
+                    tireId: isTireReplace ? (existing?.tireId || utils.newId()) : undefined,
+                    tireSwaps: isTireRotation ? tireSwaps : undefined,
+                    tireSwapA: isTireRotation ? tireSwapA : undefined,
+                    tireSwapB: isTireRotation ? tireSwapB : undefined
                 };
                 
                 if (id) await store.updateLog(log);
@@ -1742,7 +3232,7 @@ END:VCALENDAR`;
             
             async submitParking(id) {
                 const log = {
-                    id: id || Date.now().toString(),
+                    id: id || utils.newId(),
                     vehicleId: store.data.settings.activeVehicleId,
                     type: 'parking',
                     date: document.getElementById('p_date').value,
@@ -1768,6 +3258,54 @@ END:VCALENDAR`;
             },
             
             // --- EXPORT / IMPORT / SELECTORS ---
+            snoozeReminder(id, days) {
+                const rc = store.data.settings.reminderCenter || { snoozedUntil: {}, done: {} };
+                rc.snoozedUntil = rc.snoozedUntil || {};
+                rc.done = rc.done || {};
+                rc.snoozedUntil[id] = new Date(Date.now() + (days * 86400000)).toISOString();
+                store.data.settings.reminderCenter = rc;
+                store.saveData().then(() => this.render());
+            },
+
+            markReminderDone(id) {
+                const rc = store.data.settings.reminderCenter || { snoozedUntil: {}, done: {} };
+                rc.snoozedUntil = rc.snoozedUntil || {};
+                rc.done = rc.done || {};
+                rc.done[id] = true;
+                delete rc.snoozedUntil[id];
+                store.data.settings.reminderCenter = rc;
+                store.saveData().then(() => this.render());
+            },
+
+            restoreReminder(id) {
+                const rc = store.data.settings.reminderCenter || { snoozedUntil: {}, done: {} };
+                rc.snoozedUntil = rc.snoozedUntil || {};
+                rc.done = rc.done || {};
+                delete rc.done[id];
+                store.data.settings.reminderCenter = rc;
+                store.saveData().then(() => this.render());
+            },
+
+            unsnoozeReminder(id) {
+                const rc = store.data.settings.reminderCenter || { snoozedUntil: {}, done: {} };
+                rc.snoozedUntil = rc.snoozedUntil || {};
+                delete rc.snoozedUntil[id];
+                store.data.settings.reminderCenter = rc;
+                store.saveData().then(() => this.render());
+            },
+
+            downloadBackup(filenamePrefix = 'fuelmate_backup') {
+                const json = JSON.stringify(store.data);
+                const blob = new Blob([json], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const ts = new Date().toISOString().replace(/[:]/g, '').slice(0, 15);
+                a.download = `${filenamePrefix}_${ts}.json`;
+                a.click();
+                return a.download;
+            },
+
             exportData() {
                 const json = JSON.stringify(store.data);
                 const blob = new Blob([json], {type: 'application/json'});
@@ -1789,21 +3327,96 @@ END:VCALENDAR`;
                 const file = input.files[0];
                 if (!file) return;
                 
-                setTimeout(() => {
-                    if (confirm(utils.t('import_warn'))) {
-                        const reader = new FileReader();
-                        reader.onload = async (e) => {
+                const fileName = file.name || 'backup.json';
+                const fileSize = file.size || 0;
+
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        const validation = utils.validateImportData(data);
+                        if (!validation.ok) {
+                            alert(utils.t('import_invalid'));
+                            input.value = '';
+                            return;
+                        }
+
+                        const currentSummary = utils.summarizeImportData(store.data);
+                        const incomingSummary = validation.summary;
+                        const topTypes = (counts) => Object.entries(counts)
+                            .sort((a,b) => b[1]-a[1])
+                            .slice(0, 6)
+                            .map(([k,v]) => `${k}: ${v}`)
+                            .join(', ');
+
+                        const warningText = validation.warnings?.some(w => w.code === 'orphan_logs')
+                            ? `<div class="text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">${utils.t('import_warn')} (${validation.warnings.find(w=>w.code==='orphan_logs').count} orphan logs)</div>`
+                            : `<div class="text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">${utils.t('import_warn')}</div>`;
+
+                        ui.openModal(`
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-xl font-bold theme-text-heading">${utils.t('import_summary')}</h2>
+                                    <button onclick="ui.closeModal()" class="text-slate-400"><span class="material-icons">close</span></button>
+                                </div>
+
+                                ${warningText}
+
+                                <div class="theme-bg-card p-4 rounded-2xl border theme-border">
+                                    <div class="text-xs theme-text-sub uppercase tracking-wider mb-2">${utils.t('import_file')}</div>
+                                    <div class="font-bold theme-text-heading">${fileName}</div>
+                                    <div class="text-xs theme-text-sub">${utils.formatFileSize(fileSize)}</div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="theme-bg-card p-4 rounded-2xl border theme-border">
+                                        <div class="text-xs theme-text-sub uppercase tracking-wider mb-2">${utils.t('import_current')}</div>
+                                        <div class="text-sm font-bold theme-text-heading">${utils.t('import_counts')}: ${currentSummary.vehiclesCount} / ${currentSummary.logsCount}</div>
+                                        <div class="text-xs theme-text-sub mt-1">${utils.t('import_types')}: ${topTypes(currentSummary.typeCounts) || '--'}</div>
+                                    </div>
+                                    <div class="theme-bg-card p-4 rounded-2xl border theme-border">
+                                        <div class="text-xs theme-text-sub uppercase tracking-wider mb-2">${utils.t('import_incoming')}</div>
+                                        <div class="text-sm font-bold theme-text-heading">${utils.t('import_counts')}: ${incomingSummary.vehiclesCount} / ${incomingSummary.logsCount}</div>
+                                        <div class="text-xs theme-text-sub mt-1">${utils.t('import_types')}: ${topTypes(incomingSummary.typeCounts) || '--'}</div>
+                                    </div>
+                                </div>
+
+                                <div class="theme-bg-card p-4 rounded-2xl border theme-border">
+                                    <div class="text-xs theme-text-sub uppercase tracking-wider mb-2">${utils.t('import_settings')}</div>
+                                    <div class="text-xs theme-text-sub">
+                                        units: ${incomingSummary.settings.units || '--'} • currency: ${incomingSummary.settings.currency || '--'} • language: ${incomingSummary.settings.language || '--'}
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-3">
+                                    <button onclick="ui.closeModal()" class="flex-1 bg-slate-100 dark:bg-slate-800 theme-text-heading py-3 rounded-xl font-bold">${utils.t('cancel')}</button>
+                                    <button id="confirm_import_btn" class="flex-1 grad-teal text-white py-3 rounded-xl font-bold shadow-lg">${utils.t('import_overwrite')}</button>
+                                </div>
+                            </div>
+                        `);
+
+                        document.getElementById('confirm_import_btn').onclick = async () => {
                             try {
-                                const data = JSON.parse(e.target.result);
-                                await store.importData(data);
-                                alert(utils.t('success_import'));
+                                const backupName = ui.downloadBackup('fuelmate_autobackup');
+                                store.data.settings.lastBackupDate = new Date().toISOString();
+                                await store.saveData();
+
+                                await store.importData(data, { overwrite: true });
+                                alert(`${utils.t('import_autobackup')} ${backupName}\n${utils.t('success_import')}`);
                                 location.reload();
-                            } catch (err) { alert(utils.t('err_file')); }
+                            } catch (err) {
+                                console.error(err);
+                                alert(utils.t('err_file'));
+                            }
                         };
-                        reader.readAsText(file);
+                    } catch (err) {
+                        console.error(err);
+                        alert(utils.t('err_file'));
+                    } finally {
+                        input.value = '';
                     }
-                    input.value = ''; // reset
-                }, 50);
+                };
+                reader.readAsText(file);
             },
             
             openVehicleSelector() {
@@ -1861,33 +3474,66 @@ END:VCALENDAR`;
             },
             
             openAboutModal() {
+                const lang = store.data.settings.language || 'en';
+                const isZh = lang === 'zh';
+                const title = isZh ? 'FuelMate（本地優先 PWA）' : 'FuelMate (Local-first PWA)';
+                const subtitle = isZh ? 'v3.0（IndexedDB 版本）' : 'v3.0 (IndexedDB Edition)';
+                const intro = isZh
+                    ? '一個把加油、維修、停車、罰單、證件到期同輪胎更換/換位集中管理嘅本地優先 App。資料預設只存喺你部機，支援離線使用同備份匯入。'
+                    : 'A local-first app to track fuel, maintenance, parking, fines, document expiry, and tire replacement/rotation. Your data stays on-device by default, with offline support and easy backups.';
+                const featuresTitle = isZh ? '主要功能' : 'Key Features';
+                const specsTitle = isZh ? '重點設計' : 'Design Notes';
+                const footer = isZh ? '為私隱與長期使用而設計。' : 'Designed for privacy and long-term use.';
+                const features = isZh
+                    ? [
+                        '多車管理 + 里程維護',
+                        '加油記錄：單價/金額/升數互算；Full/Partial 油耗邏輯',
+                        '維修/保養/停車/罰單記錄 + 統一搜尋/篩選',
+                        '輪胎四條獨立追蹤：更換 + 換位（Rotation）+ timeline',
+                        '提醒中心：輪胎/證件/定期保養整合（Snooze/Done）',
+                        'JSON/CSV 匯出；匯入前自動備份 + 匯入摘要（更安心）'
+                    ]
+                    : [
+                        'Multi-vehicle support with odometer tracking',
+                        'Fuel logs with smart Price/Cost/Volume calculation and Full/Partial logic',
+                        'Maintenance/Parking/Fines with unified search & filters',
+                        'Per-tire tracking: replacement + rotation + timeline',
+                        'Reminder Center for tires/docs/periodic service (Snooze/Done)',
+                        'JSON/CSV export; safer import with auto-backup + import summary'
+                    ];
+                const specs = isZh
+                    ? [
+                        '本地優先：IndexedDB 儲存（無需登入/伺服器）',
+                        'PWA 可安裝到主畫面；離線仍可查看/新增',
+                    ]
+                    : [
+                        'Local-first storage via IndexedDB (no login, no server required)',
+                        'Installable PWA; works offline for viewing and adding logs',
+                        '“Load more” pagination for smoother long lists on mobile',
+                        'Mostly single-file for simple deployment (e.g., GitHub Pages)'
+                    ];
+
                  this.openModal(`
                     <div class="text-center p-4">
                         <div class="w-20 h-20 mx-auto rounded-3xl grad-teal flex items-center justify-center text-white shadow-xl mb-4">
                             <span class="material-icons text-5xl">local_gas_station</span>
                         </div>
-                        <h2 class="text-2xl font-black theme-text-heading mb-1">FuelMate</h2>
-                        <div class="text-sm theme-text-sub mb-6">v2.1 (IndexedDB Edition)</div>
+                        <h2 class="text-2xl font-black theme-text-heading mb-1">${title}</h2>
+                        <div class="text-sm theme-text-sub mb-3">${subtitle}</div>
+                        <div class="text-sm theme-text-sub mb-6">${intro}</div>
                         
                         <div class="text-left space-y-4 text-sm theme-text-heading bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
-                            <h3 class="font-bold border-b pb-2 mb-2">Features</h3>
+                            <h3 class="font-bold border-b pb-2 mb-2">${featuresTitle}</h3>
                             <ul class="list-disc pl-5 space-y-1 opacity-80">
-                                <li>Complete Vehicle Cost Tracking</li>
-                                <li>Fuel (Gas/EV) & Efficiency Analysis</li>
-                                <li>Maintenance, Parking, Fines logging</li>
-                                <li>Document Expiry Reminders</li>
-                                <li>Offline-First (No Server)</li>
+                                ${features.map(f => `<li>${f}</li>`).join('')}
                             </ul>
                             
-                            <h3 class="font-bold border-b pb-2 mb-2 mt-4">Tech Specs</h3>
+                            <h3 class="font-bold border-b pb-2 mb-2 mt-4">${specsTitle}</h3>
                             <ul class="list-disc pl-5 space-y-1 opacity-80">
-                                <li>Single-File PWA Architecture</li>
-                                <li>IndexedDB Storage (>500MB capacity)</li>
-                                <li>Client-side SVG Charts & Icon Gen</li>
-                                <li>iOS Safe-Area Optimized</li>
+                                ${specs.map(s => `<li>${s}</li>`).join('')}
                             </ul>
                         </div>
-                        <div class="mt-6 text-xs text-slate-400">Designed for longevity & privacy.</div>
+                        <div class="mt-6 text-xs text-slate-400">${footer}</div>
                     </div>
                  `);
             }
@@ -1904,6 +3550,9 @@ END:VCALENDAR`;
         window.addEventListener('DOMContentLoaded', () => ui.init());
         
         if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.error('Service Worker registration failed', err));
+            });
         }
     </script>
 </body>

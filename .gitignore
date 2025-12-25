@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Generated Tailwind safelist (built from index.html templates)
+src/tailwind-safelist.html
