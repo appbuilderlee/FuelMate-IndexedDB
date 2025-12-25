@@ -156,6 +156,10 @@
                 drive_awd: 'AWD/4WD',
                 tire_tread: 'Tread Depth (mm)',
                 tire_pressure: 'Pressure (psi)',
+                pressure_unit: 'Pressure Unit',
+                unit_psi: 'psi',
+                unit_kpa: 'kPa',
+                unit_bar: 'bar',
                 tire_alignment: 'Alignment',
                 tire_balancing: 'Balancing',
                 tire_recommended: 'Recommended',
@@ -241,7 +245,11 @@
                 drive_rwd: '後驅',
                 drive_awd: '四驅',
                 tire_tread: '胎紋深度 (mm)',
-                tire_pressure: '胎壓 (psi)',
+                tire_pressure: '胎壓',
+                pressure_unit: '氣壓單位',
+                unit_psi: 'psi',
+                unit_kpa: 'kPa',
+                unit_bar: 'bar',
                 tire_alignment: '四輪定位',
                 tire_balancing: '平衡',
                 tire_recommended: '建議',
@@ -308,8 +316,8 @@
         const store = {
             db: null,
             dbName: 'FuelMateDB',
-            defaultSettings: { currency: '$', units: 'metric', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, reminderCenter: { snoozedUntil: {}, done: {} }, lastBackupDate: null, activeVehicleId: null },
-            data: { vehicles: [], logs: [], settings: { currency: '$', units: 'metric', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, reminderCenter: { snoozedUntil: {}, done: {} }, lastBackupDate: null, activeVehicleId: null } },
+            defaultSettings: { currency: '$', units: 'metric', pressureUnit: 'kPa', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, reminderCenter: { snoozedUntil: {}, done: {} }, lastBackupDate: null, activeVehicleId: null },
+            data: { vehicles: [], logs: [], settings: { currency: '$', units: 'metric', pressureUnit: 'kPa', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, reminderCenter: { snoozedUntil: {}, done: {} }, lastBackupDate: null, activeVehicleId: null } },
             pageFilters: { 
                 dashboard: { mode: 'month', value: new Date().toISOString().slice(0, 7) }, 
                 fuel: { mode: 'year', value: new Date().getFullYear().toString() }, 
@@ -567,6 +575,40 @@
                 return `Cost/${unit}`;
             },
             getDistUnit() { return store.data.settings.units === 'imperial' ? 'mi' : 'km'; },
+            getPressureUnit() {
+                const u = store.data.settings.pressureUnit;
+                if (u === 'psi' || u === 'kPa' || u === 'bar') return u;
+                return store.data.settings.units === 'imperial' ? 'psi' : 'kPa';
+            },
+            pressureToKpa(value, unit) {
+                const v = parseFloat(value);
+                if (!Number.isFinite(v)) return null;
+                if (unit === 'psi') return v * 6.89476;
+                if (unit === 'bar') return v * 100;
+                return v; // kPa
+            },
+            pressureFromKpa(kpaValue, unit) {
+                const v = parseFloat(kpaValue);
+                if (!Number.isFinite(v)) return null;
+                if (unit === 'psi') return v / 6.89476;
+                if (unit === 'bar') return v / 100;
+                return v; // kPa
+            },
+            formatPressureFromLog(log) {
+                const unit = utils.getPressureUnit();
+                let kpa = null;
+                if (log && log.tirePressureKpa !== undefined && log.tirePressureKpa !== null && log.tirePressureKpa !== '') {
+                    kpa = utils.pressureToKpa(log.tirePressureKpa, 'kPa');
+                } else if (log && log.tirePressure !== undefined && log.tirePressure !== null && log.tirePressure !== '') {
+                    // Back-compat: older entries assumed psi
+                    kpa = utils.pressureToKpa(log.tirePressure, 'psi');
+                }
+                if (kpa === null) return null;
+                const shown = utils.pressureFromKpa(kpa, unit);
+                if (shown === null) return null;
+                const decimals = unit === 'psi' ? 0 : 1;
+                return `${shown.toFixed(decimals)} ${unit}`;
+            },
             getFuelUnit() { 
                 const v = store.getActiveVehicle();
                 return v && v.fuelUnit ? v.fuelUnit : (store.data.settings.units === 'imperial' ? 'Gal' : 'L'); 
@@ -2081,6 +2123,12 @@ END:VCALENDAR`;
                                     </div>
                                 </div>
                                 <div>
+                                    <label class="text-xs theme-text-sub block mb-1">${utils.t('pressure_unit')}</label>
+                                    <select onchange="store.data.settings.pressureUnit=this.value;store.saveData();ui.render()" class="w-full p-2 rounded-lg text-sm">
+                                        ${['psi','kPa','bar'].map(u => `<option value="${u}" ${(settings.pressureUnit||utils.getPressureUnit())===u?'selected':''}>${utils.t('unit_'+u.toLowerCase())}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
                                     <label class="text-xs theme-text-sub block mb-1">${utils.t('currency')}</label>
                                     <select onchange="store.data.settings.currency=this.value;store.saveData();ui.render()" class="w-full p-2 rounded-lg text-sm">
                                         ${['$','€','£','¥','HK$','A$','NT$'].map(c => `<option value="${c}" ${settings.currency===c?'selected':''}>${c}</option>`).join('')}
@@ -2241,7 +2289,8 @@ END:VCALENDAR`;
                 } else if (log.type === 'tire_replace') {
                     const parts = [];
                     if (log.tireTread) parts.push(`${utils.t('tire_tread')}: ${log.tireTread}`);
-                    if (log.tirePressure) parts.push(`${utils.t('tire_pressure')}: ${log.tirePressure}`);
+                    const p = utils.formatPressureFromLog(log);
+                    if (p) parts.push(`${utils.t('tire_pressure')}: ${p}`);
                     if (log.tireAlignment) parts.push(utils.t('tire_alignment'));
                     if (log.tireBalancing) parts.push(utils.t('tire_balancing'));
                     if (parts.length) extraInfoHtml = `<div class="text-xs theme-text-sub mt-0.5">${parts.join(' • ')}</div>`;
@@ -2539,7 +2588,15 @@ END:VCALENDAR`;
 
             openAddService(id = null, defaultType = 'service') {
                 const existing = id ? store.data.logs.find(l => l.id === id) : null;
-                const log = existing ? { ...existing } : { date: new Date().toISOString().slice(0, 10), odometer: store.getActiveVehicle()?.currentOdometer || '', type: defaultType, cost: '', location: '', notes: '', expiryDate: '', tirePosition: 'front_left', tireBrand: '', tireTread: '', tirePressure: '', tireAlignment: false, tireBalancing: false, tireSwaps: [{ a: 'front_left', b: 'rear_left' }, { a: 'front_right', b: 'rear_right' }] };
+                const log = existing ? { ...existing } : { date: new Date().toISOString().slice(0, 10), odometer: store.getActiveVehicle()?.currentOdometer || '', type: defaultType, cost: '', location: '', notes: '', expiryDate: '', tirePosition: 'front_left', tireBrand: '', tireTread: '', tirePressureKpa: '', tireAlignment: false, tireBalancing: false, tireSwaps: [{ a: 'front_left', b: 'rear_left' }, { a: 'front_right', b: 'rear_right' }] };
+                if (log.type === 'tire_replace') {
+                    const unit = utils.getPressureUnit();
+                    const kpa = (log.tirePressureKpa !== undefined && log.tirePressureKpa !== null && log.tirePressureKpa !== '')
+                        ? utils.pressureToKpa(log.tirePressureKpa, 'kPa')
+                        : (log.tirePressure ? utils.pressureToKpa(log.tirePressure, 'psi') : null);
+                    const shown = kpa === null ? '' : utils.pressureFromKpa(kpa, unit);
+                    log._tirePressureDisplay = shown === null ? '' : (unit === 'psi' ? shown.toFixed(0) : shown.toFixed(1));
+                }
                 
                 if (log.type === 'tire_rotation') {
                     const swaps = Array.isArray(log.tireSwaps) && log.tireSwaps.length
@@ -2606,7 +2663,8 @@ END:VCALENDAR`;
                                     </div>
                                     <div>
                                         <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_pressure')}</label>
-                                        <input id="l_tire_pressure" type="number" step="0.5" value="${log.tirePressure || ''}" class="w-full p-3 rounded-xl text-sm" placeholder="e.g. 32">
+                                        <input id="l_tire_pressure" type="number" step="0.5" value="${log._tirePressureDisplay || ''}" class="w-full p-3 rounded-xl text-sm" placeholder="${utils.getPressureUnit()==='psi'?'e.g. 32':(utils.getPressureUnit()==='bar'?'e.g. 2.3':'e.g. 220')}">
+                                        <div class="text-[10px] theme-text-sub mt-1">${utils.getPressureUnit()}</div>
                                     </div>
                                 </div>
                                 <div class="flex gap-3 mt-3">
@@ -2821,7 +2879,7 @@ END:VCALENDAR`;
                     tirePosition: isTireReplace ? document.getElementById('l_tire_pos')?.value : undefined,
                     tireBrand: isTireReplace ? document.getElementById('l_tire_brand')?.value : undefined,
                     tireTread: isTireReplace ? document.getElementById('l_tire_tread')?.value : undefined,
-                    tirePressure: isTireReplace ? document.getElementById('l_tire_pressure')?.value : undefined,
+                    tirePressureKpa: isTireReplace ? (utils.pressureToKpa(document.getElementById('l_tire_pressure')?.value, utils.getPressureUnit())?.toFixed(1) || '') : undefined,
                     tireAlignment: isTireReplace ? !!document.getElementById('l_tire_alignment')?.checked : undefined,
                     tireBalancing: isTireReplace ? !!document.getElementById('l_tire_balancing')?.checked : undefined,
                     tireId: isTireReplace ? (existing?.tireId || utils.newId()) : undefined,
