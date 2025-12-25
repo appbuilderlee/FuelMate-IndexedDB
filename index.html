@@ -6,6 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f766e">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <title>FuelMate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -110,23 +112,6 @@
             link.rel = 'apple-touch-icon';
             link.href = url;
             document.head.appendChild(link);
-            
-            // Dynamic Manifest
-            const manifest = {
-                name: "FuelMate",
-                short_name: "FuelMate",
-                start_url: ".",
-                display: "standalone",
-                background_color: "#0f766e",
-                theme_color: "#0f766e",
-                icons: [{ src: url, sizes: "1024x1024", type: "image/png" }]
-            };
-            const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-            const manifestUrl = URL.createObjectURL(blob);
-            const linkManifest = document.createElement('link');
-            linkManifest.rel = 'manifest';
-            linkManifest.href = manifestUrl;
-            document.head.appendChild(linkManifest);
         })();
     </script>
 </head>
@@ -152,8 +137,19 @@
                 date: 'Date', odometer: 'Odometer', liters: 'Liters', gallons: 'Gallons', cost: 'Cost', price_unit: 'Price/Unit', location: 'Location', notes: 'Notes',
                 detect_loc: 'Detect Location', save: 'Save', cancel: 'Cancel', delete: 'Delete',
                 service_type: 'Service Type', service: 'Service', repair: 'Repair', parking_fee: 'Parking Fee', traffic_fine: 'Traffic Fine',
+                tire_replace: 'Tire Replacement',
                 license: 'License Renewal', insurance: 'Insurance Renewal', registration: 'Vehicle Registration',
                 periodic_maintenance: 'Periodic Maintenance', car_wash: 'Car Wash', car_accessories: 'Accessories',
+                tire_positions: 'Tire Positions',
+                tire_pos: 'Position',
+                tire_front_left: 'Front Left', tire_front_right: 'Front Right', tire_rear_left: 'Rear Left', tire_rear_right: 'Rear Right',
+                tire_brand: 'Brand/Model',
+                next_tire_change: 'Next Tire Change',
+                tire_not_set: 'Not set',
+                due_in: 'Due in',
+                overdue: 'Overdue',
+                tire_interval_dist: 'Tire Interval (Distance)',
+                tire_interval_time: 'Tire Interval (Years)',
                 license_expiry: 'License Expiry', insurance_expiry: 'Insurance Expiry', expiring_soon: 'Expiring in', expired: 'Expired',
                 reminders: 'Reminders', reminder_settings: 'Reminder Settings',
                 export_json: 'Backup Data (JSON)', import_json: 'Restore Data (JSON)', export_csv: 'Export Excel (CSV)',
@@ -166,8 +162,10 @@
                 metric: 'Metric (L, km)', imperial: 'Imperial (Gal, mi)',
                 success_import: 'Data imported successfully!', err_file: 'Invalid file format',
                 partial_tank: 'Partial Tank / Missed Fill-up',
-                common_services: 'Common Services', oil_change: 'Oil Change', tire_change: 'Tire Change', battery: 'Battery', brake: 'Brakes', inspection: 'Inspection',
-                fine_types: 'Fine Types', parking_ticket: 'Parking Ticket', speeding: 'Speeding', red_light: 'Red Light', illegal_turn: 'Illegal Turn',
+                partial: 'Partial',
+                full: 'Full',
+                common_services: 'Common Services', oil_change: 'Oil Change', tire_change: 'Tire Change', tire_rotation: 'Tire Rotation', alignment: 'Wheel Alignment', air_filter: 'Air Filter', cabin_filter: 'Cabin Filter', spark_plugs: 'Spark Plugs', brake_fluid: 'Brake Fluid', transmission_fluid: 'Transmission Fluid', coolant: 'Coolant', wiper_blades: 'Wiper Blades', battery: 'Battery', brake: 'Brakes', inspection: 'Inspection',
+                fine_types: 'Fine Types', parking_ticket: 'Parking Ticket', no_parking: 'No Parking', speeding: 'Speeding', red_light: 'Red Light', illegal_turn: 'Illegal Turn', bus_lane: 'Bus Lane', seatbelt: 'Seat Belt', phone_use: 'Phone Use', toll: 'Toll / Fee',
                 service_interval: 'Service Interval', int_none: 'None', int_5k: '5,000 km', int_10k: '10,000 km', int_6m: '6 Months', int_1yr: '1 Year',
                 service_interval_dist: 'Interval (Distance)', service_interval_time: 'Interval (Time)',
                 due_service: 'Service Due', due_in: 'Due in',
@@ -191,8 +189,19 @@
                 date: '日期', odometer: '里程', liters: '升數', gallons: '加侖', cost: '金額', price_unit: '單價', location: '地點', notes: '備註',
                 detect_loc: '定位', save: '保存', cancel: '取消', delete: '刪除',
                 service_type: '維修類型', service: '一般維修', repair: '故障維修', parking_fee: '停車費', traffic_fine: '罰單/告票',
+                tire_replace: '更換輪胎',
                 license: '車牌續期', insurance: '保險續期', registration: '車輛登記',
                 periodic_maintenance: '定期保養', car_wash: '洗車', car_accessories: '汽車用品',
+                tire_positions: '輪胎位置',
+                tire_pos: '位置',
+                tire_front_left: '左前', tire_front_right: '右前', tire_rear_left: '左後', tire_rear_right: '右後',
+                tire_brand: '品牌/型號',
+                next_tire_change: '下次換胎',
+                tire_not_set: '未設定',
+                due_in: '剩餘',
+                overdue: '已到期',
+                tire_interval_dist: '換胎間隔（里程）',
+                tire_interval_time: '換胎間隔（年）',
                 license_expiry: '車牌到期', insurance_expiry: '保險到期', expiring_soon: '剩餘', expired: '已過期',
                 reminders: '提醒通知', reminder_settings: '提醒設定',
                 export_json: '匯出資料 (JSON)', import_json: '匯入資料 (JSON)', export_csv: '匯出 Excel (CSV)',
@@ -205,8 +214,10 @@
                 metric: '公制 (L, km)', imperial: '英制 (Gal, mi)',
                 success_import: '資料匯入成功！', err_file: '文件格式錯誤',
                 partial_tank: '未加滿 / 漏記 (不計算油耗)',
-                common_services: '常用項目', oil_change: '換機油', tire_change: '換輪胎', battery: '換電池', brake: '煞車皮', inspection: '年檢',
-                fine_types: '罰單類型', parking_ticket: '違例泊車', speeding: '超速', red_light: '衝紅燈', illegal_turn: '違規轉彎',
+                partial: '未加滿',
+                full: '加滿',
+                common_services: '常用項目', oil_change: '換機油', tire_change: '換輪胎', tire_rotation: '輪胎換位', alignment: '四輪定位', air_filter: '更換空氣濾芯', cabin_filter: '更換冷氣濾芯', spark_plugs: '更換火咀', brake_fluid: '更換煞車油', transmission_fluid: '更換波箱油', coolant: '更換冷卻液', wiper_blades: '更換雨刷', battery: '換電池', brake: '煞車皮', inspection: '年檢',
+                fine_types: '罰單類型', parking_ticket: '違例泊車', no_parking: '禁止停車', speeding: '超速', red_light: '衝紅燈', illegal_turn: '違規轉彎', bus_lane: '巴士線', seatbelt: '安全帶', phone_use: '使用手機', toll: '道路收費/費用',
                 service_interval: '保養間隔', int_none: '關閉', int_5k: '5,000 km', int_10k: '10,000 km', int_6m: '6 個月', int_1yr: '1 年',
                 service_interval_dist: '保養間隔 (里程)', service_interval_time: '保養間隔 (時間)',
                 due_service: '即將保養', due_in: '剩餘',
@@ -227,7 +238,8 @@
         const store = {
             db: null,
             dbName: 'FuelMateDB',
-            data: { vehicles: [], logs: [], settings: { currency: '$', units: 'metric', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', reminders: {}, lastBackupDate: null } },
+            defaultSettings: { currency: '$', units: 'metric', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, lastBackupDate: null, activeVehicleId: null },
+            data: { vehicles: [], logs: [], settings: { currency: '$', units: 'metric', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, lastBackupDate: null, activeVehicleId: null } },
             pageFilters: { 
                 dashboard: { mode: 'month', value: new Date().toISOString().slice(0, 7) }, 
                 fuel: { mode: 'year', value: new Date().getFullYear().toString() }, 
@@ -264,9 +276,33 @@
                 return new Promise((resolve, reject) => {
                     const tx = this.db.transaction(storeName, mode);
                     const store = tx.objectStore(storeName);
-                    const request = callback(store);
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = () => reject(request.error);
+                    let request;
+                    let result;
+                    try {
+                        request = callback(store, tx);
+                    } catch (err) {
+                        reject(err);
+                        return;
+                    }
+                    if (request) {
+                        request.onsuccess = () => { result = request.result; };
+                        request.onerror = () => reject(request.error);
+                    }
+                    tx.oncomplete = () => resolve(result);
+                    tx.onerror = () => reject(tx.error || new Error('Transaction failed'));
+                    tx.onabort = () => reject(tx.error || new Error('Transaction aborted'));
+                });
+            },
+
+            async clearAllData() {
+                return new Promise((resolve, reject) => {
+                    const tx = this.db.transaction(['vehicles', 'logs', 'settings'], 'readwrite');
+                    tx.objectStore('vehicles').clear();
+                    tx.objectStore('logs').clear();
+                    tx.objectStore('settings').clear();
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error || new Error('Clear failed'));
+                    tx.onabort = () => reject(tx.error || new Error('Clear aborted'));
                 });
             },
 
@@ -377,7 +413,14 @@
                 };
             },
 
-            async importData(importedData) {
+            async importData(importedData, options = {}) {
+                const { overwrite = false } = options;
+                if (overwrite) {
+                    this.data.vehicles = [];
+                    this.data.logs = [];
+                    this.data.settings = { ...this.defaultSettings };
+                    await this.clearAllData();
+                }
                 if (importedData.vehicles) {
                     for (const v of importedData.vehicles) await this.addVehicle(v);
                 }
@@ -386,6 +429,11 @@
                 }
                 if (importedData.settings) {
                     this.data.settings = { ...this.data.settings, ...importedData.settings };
+                    await this.saveData();
+                }
+
+                if (!this.data.settings.activeVehicleId && this.data.vehicles.length > 0) {
+                    this.data.settings.activeVehicleId = this.data.vehicles[0].id;
                     await this.saveData();
                 }
             },
@@ -407,6 +455,17 @@
                 const lang = store.data.settings.language || 'en';
                 return translations[lang][key] || key;
             },
+            newId() {
+                if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
+                    return globalThis.crypto.randomUUID();
+                }
+                return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+            },
+            csvEscape(value) {
+                const s = value === undefined || value === null ? '' : String(value);
+                if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+                return s;
+            },
             formatDate(isoString) {
                 if (!isoString) return '';
                 const date = new Date(isoString);
@@ -418,6 +477,12 @@
                 if (amount === undefined || amount === null || amount === '--' || isNaN(parseFloat(amount))) return '--';
                 return `${store.data.settings.currency}${parseFloat(amount).toFixed(2)}`;
             },
+            getCostPerDistLabel() {
+                const lang = store.data.settings.language || 'en';
+                const unit = store.data.settings.units === 'imperial' ? 'mi' : 'km';
+                if (lang === 'zh') return unit === 'mi' ? '每英里成本' : '每公里成本';
+                return `Cost/${unit}`;
+            },
             getDistUnit() { return store.data.settings.units === 'imperial' ? 'mi' : 'km'; },
             getFuelUnit() { 
                 const v = store.getActiveVehicle();
@@ -425,8 +490,76 @@
             },
             getEfficiencyLabel() {
                  const v = store.getActiveVehicle();
-                 if (v && v.fuelUnit === 'kWh') return 'kWh/100km';
+                 if (v && v.fuelUnit === 'kWh') return `kWh/100${utils.getDistUnit()}`;
                  return store.data.settings.units === 'imperial' ? 'MPG' : 'L/100km'; 
+            },
+            getTirePositions() { return ['front_left','front_right','rear_left','rear_right']; },
+            formatDaysShort(days) {
+                const d = Math.max(0, Math.ceil(days));
+                return (store.data.settings.language === 'zh') ? `${d}天` : `${d}d`;
+            },
+            getTireReplacementStatus(vehicle) {
+                const distInt = parseInt(store.data.settings.tireReplaceDist) || 0;
+                const yearsInt = parseInt(store.data.settings.tireReplaceYears) || 0;
+                const now = new Date();
+                const currentOdo = parseFloat(vehicle?.currentOdometer) || 0;
+                const logs = store.data.logs.filter(l => l.vehicleId === vehicle?.id && l.type === 'tire_replace');
+
+                const latestByPos = new Map();
+                for (const log of logs) {
+                    const pos = log.tirePosition;
+                    if (!pos) continue;
+                    const odo = parseFloat(log.odometer) || 0;
+                    const dateMs = log.date ? new Date(log.date).getTime() : 0;
+                    const existing = latestByPos.get(pos);
+                    if (!existing) {
+                        latestByPos.set(pos, { log, odo, dateMs });
+                        continue;
+                    }
+                    if (odo > existing.odo || (odo === existing.odo && dateMs > existing.dateMs)) {
+                        latestByPos.set(pos, { log, odo, dateMs });
+                    }
+                }
+
+                const yearDays = 365;
+                return utils.getTirePositions().map((pos) => {
+                    const latest = latestByPos.get(pos);
+                    if (!latest) {
+                        return { pos, isOverdue: false, primary: utils.t('tire_not_set'), secondary: '' };
+                    }
+
+                    const lastOdo = latest.odo;
+                    const lastDate = latest.dateMs ? new Date(latest.dateMs) : null;
+                    const dueOdo = distInt > 0 ? (lastOdo + distInt) : null;
+                    const remainingKm = dueOdo === null ? null : (dueOdo - currentOdo);
+
+                    let dueDate = null;
+                    let remainingDays = null;
+                    if (yearsInt > 0 && lastDate) {
+                        dueDate = new Date(lastDate);
+                        dueDate.setFullYear(dueDate.getFullYear() + yearsInt);
+                        remainingDays = Math.ceil((dueDate - now) / 86400000);
+                    }
+
+                    const overdueDist = remainingKm !== null && remainingKm <= 0;
+                    const overdueTime = remainingDays !== null && remainingDays <= 0;
+                    const isOverdue = overdueDist || overdueTime;
+
+                    const distText = remainingKm === null ? '' : `${Math.max(0, Math.round(remainingKm)).toLocaleString()} ${utils.getDistUnit()}`;
+                    const timeText = remainingDays === null ? '' : utils.formatDaysShort(remainingDays);
+
+                    const distFrac = remainingKm === null ? Number.POSITIVE_INFINITY : (remainingKm / Math.max(1, distInt));
+                    const timeFrac = remainingDays === null ? Number.POSITIVE_INFINITY : (remainingDays / Math.max(1, yearsInt * yearDays));
+                    const primaryIsDist = distFrac <= timeFrac;
+
+                    const primary = isOverdue ? utils.t('overdue') : (primaryIsDist ? (distText || timeText) : (timeText || distText));
+                    const secondaryParts = [];
+                    if (!isOverdue && distText && !primaryIsDist) secondaryParts.push(distText);
+                    if (!isOverdue && timeText && primaryIsDist) secondaryParts.push(timeText);
+                    const secondary = secondaryParts.length ? `${utils.t('due_in')} ${secondaryParts.join(' / ')}` : '';
+
+                    return { pos, isOverdue, primary, secondary };
+                });
             },
             
             getAvailableYears() {
@@ -466,9 +599,12 @@
                 if (category === 'fuel' || category === 'all') {
                     // Filter specifically for fuel logs to calculate efficiency
                     const fuelLogs = logs.filter(l => l.type === 'fuel').sort((a, b) => parseFloat(a.odometer) - parseFloat(b.odometer));
+                    const v = store.getActiveVehicle();
+                    const isImperial = store.data.settings.units === 'imperial';
+                    const isEV = v && v.fuelUnit === 'kWh';
                     
                     if (fuelLogs.length > 1) {
-                        let totalLiters = 0;
+                        let totalFuel = 0;
                         let validDist = 0;
                         
                         for (let i = 0; i < fuelLogs.length - 1; i++) {
@@ -480,13 +616,15 @@
                                 const dist = next.odometer - curr.odometer;
                                 if (dist > 0) {
                                     validDist += dist;
-                                    totalLiters += parseFloat(next.liters); 
+                                    totalFuel += parseFloat(next.liters) || 0; 
                                 }
                             }
                         }
                         
-                        if (validDist > 0) {
-                            efficiency = (totalLiters / validDist * 100).toFixed(1);
+                        if (validDist > 0 && totalFuel > 0) {
+                            if (isEV) efficiency = (totalFuel / validDist * 100).toFixed(1);
+                            else if (isImperial) efficiency = (validDist / totalFuel).toFixed(1);
+                            else efficiency = (totalFuel / validDist * 100).toFixed(1);
                         }
                     }
                 }
@@ -516,13 +654,19 @@
             generateTrendChart(logs) {
                 const fuelLogs = logs.filter(l => l.type === 'fuel' && !l.isPartial).sort((a,b) => new Date(a.date) - new Date(b.date));
                 if (fuelLogs.length < 2) return '';
+                const v = store.getActiveVehicle();
+                const isImperial = store.data.settings.units === 'imperial';
+                const isEV = v && v.fuelUnit === 'kWh';
                 
                 const dataPoints = [];
                 for (let i = 0; i < fuelLogs.length - 1; i++) {
                      const dist = fuelLogs[i+1].odometer - fuelLogs[i].odometer;
                      if (dist > 0) {
-                         const eff = (fuelLogs[i+1].liters / dist * 100);
-                         dataPoints.push(eff);
+                         const fuel = parseFloat(fuelLogs[i+1].liters) || 0;
+                         if (fuel > 0) {
+                             const eff = isEV ? (fuel / dist * 100) : (isImperial ? (dist / fuel) : (fuel / dist * 100));
+                             dataPoints.push(eff);
+                         }
                      }
                 }
                 if (dataPoints.length < 2) return '';
@@ -618,12 +762,17 @@
 
             exportCSV() {
                 const logs = store.getVehicleLogs();
-                let csv = 'Date,Type,Odometer,Cost,Details\n';
+                const fuelUnit = utils.getFuelUnit();
+                const rows = [['Date', 'Type', 'Odometer', 'Cost', 'Details']];
                 logs.forEach(l => {
                     let details = l.notes || '';
-                    if (l.type === 'fuel') details = `${l.liters}L, ${l.isPartial ? 'Partial' : 'Full'}`;
-                    csv += `${l.date},${l.type},${l.odometer},${l.cost},"${details}"\n`;
+                    if (l.type === 'fuel') {
+                        const tank = l.isPartial ? utils.t('partial') : utils.t('full');
+                        details = `${l.liters}${fuelUnit}, ${tank}`;
+                    }
+                    rows.push([l.date, l.type, l.odometer ?? '', l.cost ?? '', details]);
                 });
+                const csv = rows.map(r => r.map(utils.csvEscape).join(',')).join('\n') + '\n';
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -652,7 +801,7 @@
 VERSION:2.0
 PRODID:-//FuelMate//EN
 BEGIN:VEVENT
-UID:${Date.now()}@fuelmate
+UID:${utils.newId()}@fuelmate
 DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
 DTSTART;VALUE=DATE:${expDate}
 SUMMARY:${title}
@@ -791,6 +940,7 @@ END:VCALENDAR`;
                 const filter = store.pageFilters.dashboard;
                 const filteredLogs = utils.filterLogs(logs, filter);
                 const stats = utils.calculateStats(filteredLogs, 'all');
+                const tireStatuses = utils.getTireReplacementStatus(vehicle);
                 
                 let remindersHtml = '';
                 const reminders = [];
@@ -918,9 +1068,9 @@ END:VCALENDAR`;
                                     <div class="text-[10px] theme-text-sub">${utils.getEfficiencyLabel()}</div>
                                 </div>
                                 <div class="theme-bg-card p-4 rounded-2xl card-shadow">
-                                    <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.t('cost_km')}</div>
+                                    <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.getCostPerDistLabel()}</div>
                                     <div class="text-2xl font-black text-blue-600">${stats.costKm}</div>
-                                    <div class="text-[10px] theme-text-sub">/${utils.getDistUnit()}</div>
+                                    <div class="text-[10px] theme-text-sub">&nbsp;</div>
                                 </div>
                                 <div class="theme-bg-card p-4 rounded-2xl card-shadow">
                                     <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.t('total_cost')}</div>
@@ -930,6 +1080,25 @@ END:VCALENDAR`;
                                     <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.t('total_dist')}</div>
                                     <div class="text-xl font-black theme-text-heading">${stats.totalDist.toLocaleString()}</div>
                                     <div class="text-[10px] theme-text-sub">${utils.getDistUnit()}</div>
+                                </div>
+                            </div>
+
+                            <div class="theme-bg-card p-4 rounded-2xl card-shadow mb-6">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-bold theme-text-heading flex items-center gap-2">
+                                        <span class="material-icons text-slate-400 text-base">tire_repair</span>
+                                        ${utils.t('next_tire_change')}
+                                    </div>
+                                    <button onclick="ui.openAddService(null,'tire_replace')" class="text-xs font-bold text-teal-600 bg-teal-50 dark:bg-teal-900/20 px-2 py-1 rounded-lg">+ ${utils.t('tire_replace')}</button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3 mt-3">
+                                    ${tireStatuses.map(s => `
+                                        <button onclick="ui.openAddService(null,'tire_replace'); setTimeout(() => { const el=document.getElementById('l_tire_pos'); if (el) el.value='${s.pos}'; }, 60);" class="text-left p-3 rounded-xl border theme-border bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition">
+                                            <div class="text-xs theme-text-sub font-bold">${utils.t('tire_' + s.pos)}</div>
+                                            <div class="text-sm font-black ${s.isOverdue ? 'text-red-600' : 'theme-text-heading'}">${s.primary}</div>
+                                            <div class="text-[10px] theme-text-sub">${s.secondary || '&nbsp;'}</div>
+                                        </button>
+                                    `).join('')}
                                 </div>
                             </div>
                         </div>
@@ -978,7 +1147,7 @@ END:VCALENDAR`;
                                 <div class="text-lg font-bold text-teal-600">${stats.efficiency} <span class="text-[10px] font-normal">${utils.getEfficiencyLabel()}</span></div>
                             </div>
                             <div class="theme-bg-card p-3 rounded-xl card-shadow border-l-4 border-blue-500">
-                                <div class="text-[10px] theme-text-sub uppercase tracking-wider">${utils.t('cost_km')}</div>
+                                <div class="text-[10px] theme-text-sub uppercase tracking-wider">${utils.getCostPerDistLabel()}</div>
                                 <div class="text-lg font-bold text-blue-600">${stats.costKm}</div>
                             </div>
                              <div class="theme-bg-card p-3 rounded-xl card-shadow">
@@ -1236,6 +1405,23 @@ END:VCALENDAR`;
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Tire Replacement Interval -->
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 card-shadow mb-6">
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">${utils.t('tire_replace')}</div>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_interval_dist')} (${utils.getDistUnit()})</label>
+                                    <input type="number" min="0" step="100" value="${settings.tireReplaceDist ?? 40000}" onchange="store.data.settings.tireReplaceDist = parseInt(this.value)||0; store.saveData(); ui.render()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700 theme-text-heading text-sm">
+                                </div>
+                                <div>
+                                    <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_interval_time')}</label>
+                                    <select onchange="store.data.settings.tireReplaceYears = parseInt(this.value)||0; store.saveData(); ui.render()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700 theme-text-heading text-sm">
+                                        ${[0,2,3,4,5,6].map(y => `<option value="${y}" ${parseInt(settings.tireReplaceYears)==y?'selected':''}>${y===0 ? utils.t('int_none') : y}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         
                         <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 card-shadow mb-6">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">App Settings</div>
@@ -1297,6 +1483,12 @@ END:VCALENDAR`;
                     icon = 'local_police';
                     colorClass = 'bg-red-50 text-red-600';
                     if (log.notes) title = utils.t(log.notes.split(',')[0]); // Use first tag as title
+                } else if (log.type === 'tire_replace') {
+                    icon = 'tire_repair';
+                    colorClass = 'bg-slate-50 text-slate-700';
+                    const posLabel = log.tirePosition ? utils.t('tire_' + log.tirePosition) : '';
+                    const brand = log.tireBrand ? ` • ${log.tireBrand}` : '';
+                    title = `${utils.t('tire_replace')}${posLabel ? ' • ' + posLabel : ''}${brand}`;
                 } else if (['license', 'insurance', 'registration'].includes(log.type)) {
                     icon = 'assignment';
                     colorClass = 'bg-purple-50 text-purple-600';
@@ -1316,7 +1508,10 @@ END:VCALENDAR`;
                 if (log.type === 'fuel') {
                     const allFuel = store.getVehicleLogs('fuel');
                     const idx = allFuel.findIndex(l => l.id === log.id);
-                    let l100 = '--', costKm = '--';
+                    let effVal = '--', costKm = '--';
+                    const v = store.getActiveVehicle();
+                    const isImperial = store.data.settings.units === 'imperial';
+                    const isEV = v && v.fuelUnit === 'kWh';
                     
                     // Logic to span over Partial logs
                     if (!log.isPartial) {
@@ -1342,11 +1537,15 @@ END:VCALENDAR`;
                              // Current log liters + accumulated partials
                              // Distance is from Prev Full to Current Full
                              const dist = log.odometer - prevLog.odometer;
-                             const totalLiters = parseFloat(log.liters) + accumulatedLiters;
+                             const totalFuel = parseFloat(log.liters) + accumulatedLiters;
                              const totalCost = parseFloat(log.cost) + accumulatedCost;
                              
                              if (dist > 0) {
-                                 l100 = ((totalLiters / dist) * 100).toFixed(1);
+                                 if (totalFuel > 0) {
+                                     if (isEV) effVal = ((totalFuel / dist) * 100).toFixed(1);
+                                     else if (isImperial) effVal = (dist / totalFuel).toFixed(1);
+                                     else effVal = ((totalFuel / dist) * 100).toFixed(1);
+                                 }
                                  costKm = (totalCost / dist).toFixed(2);
                              }
                          }
@@ -1356,10 +1555,10 @@ END:VCALENDAR`;
                         <div class="mt-3 pt-3 border-t theme-border flex justify-between text-xs">
                             <div>
                                 <div class="theme-text-sub mb-0.5 uppercase tracking-wider text-[10px]">${utils.getEfficiencyLabel()}</div>
-                                <div class="font-bold text-teal-600 text-sm">${l100}</div>
+                                <div class="font-bold text-teal-600 text-sm">${effVal}</div>
                             </div>
                              <div class="text-right">
-                                <div class="theme-text-sub mb-0.5 uppercase tracking-wider text-[10px]">${utils.t('cost_km')}</div>
+                                <div class="theme-text-sub mb-0.5 uppercase tracking-wider text-[10px]">${utils.getCostPerDistLabel()}</div>
                                 <div class="font-bold text-teal-600 text-sm">${utils.formatCurrency(costKm)}</div>
                             </div>
                         </div>
@@ -1387,7 +1586,7 @@ END:VCALENDAR`;
                                 </div>
                                 <div>
                                     <div class="font-bold text-sm theme-text-heading">${date}</div>
-                                    <div class="text-xs theme-text-heading font-semibold mt-0.5">${title} ${log.isPartial ? '<span class="text-amber-500 text-[10px] border border-amber-500 px-1 rounded ml-1">PARTIAL</span>' : ''}</div>
+                                    <div class="text-xs theme-text-heading font-semibold mt-0.5">${title} ${log.isPartial ? `<span class="text-amber-500 text-[10px] border border-amber-500 px-1 rounded ml-1">${utils.t('partial')}</span>` : ''}</div>
                                     <div class="text-xs theme-text-sub mt-0.5">${log.odometer} ${utils.getDistUnit()}</div>
                                     ${extraInfoHtml}
                                     ${locHtml}
@@ -1506,7 +1705,7 @@ END:VCALENDAR`;
                 if (!make || !model) return alert('Make and Model are required');
                 
                 const vehicle = {
-                    id: id || Date.now().toString(),
+                    id: id || utils.newId(),
                     make, model,
                     year: document.getElementById('v_year').value,
                     currentOdometer: parseInt(document.getElementById('v_odo').value) || 0,
@@ -1566,9 +1765,9 @@ END:VCALENDAR`;
 
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="text-xs theme-text-sub block mb-1">${utils.t('liters')}</label><input id="l_liters" type="number" step="0.01" value="${log.liters}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('vol')"></div>
-                            <div><label class="text-xs theme-text-sub block mb-1">${utils.t('cost')}</label><input id="l_cost" type="number" step="0.01" value="${log.cost}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('cost')"></div>
+                            <div><label class="text-xs theme-text-sub block mb-1">${utils.t('price_unit')}</label><input id="l_price" type="number" step="0.01" class="w-full p-3 rounded-xl bg-slate-50" oninput="ui.calcFuel('price')"></div>
                         </div>
-                        <div><label class="text-xs theme-text-sub block mb-1">${utils.t('price_unit')}</label><input id="l_price" type="number" step="0.01" class="w-full p-3 rounded-xl bg-slate-50" oninput="ui.calcFuel('price')"></div>
+                        <div><label class="text-xs theme-text-sub block mb-1">${utils.t('cost')}</label><input id="l_cost" type="number" step="0.01" value="${log.cost}" class="w-full p-3 rounded-xl" oninput="ui.calcFuel('cost')"></div>
                         
                         <div class="flex items-center gap-2 bg-amber-50 p-3 rounded-xl">
                             <input type="checkbox" id="l_partial" class="w-5 h-5 text-teal-600 rounded" ${log.isPartial?'checked':''}>
@@ -1588,17 +1787,49 @@ END:VCALENDAR`;
                     </div>
                 `);
                 // Init calc
-                setTimeout(() => ui.calcFuel('cost'), 100);
+                setTimeout(() => ui.calcFuel('init'), 100);
             },
 
             calcFuel(trigger) {
-                const vol = parseFloat(document.getElementById('l_liters').value) || 0;
-                const cost = parseFloat(document.getElementById('l_cost').value) || 0;
-                const price = parseFloat(document.getElementById('l_price').value) || 0;
-                
-                if (trigger === 'cost' && vol > 0 && cost > 0) document.getElementById('l_price').value = (cost / vol).toFixed(3);
-                else if (trigger === 'vol' && price > 0) document.getElementById('l_cost').value = (vol * price).toFixed(2);
-                else if (trigger === 'price' && vol > 0) document.getElementById('l_cost').value = (vol * price).toFixed(2);
+                const litersEl = document.getElementById('l_liters');
+                const costEl = document.getElementById('l_cost');
+                const priceEl = document.getElementById('l_price');
+
+                const vol = parseFloat(litersEl.value) || 0;
+                const cost = parseFloat(costEl.value) || 0;
+                const price = parseFloat(priceEl.value) || 0;
+
+                const compute = (targetKey) => {
+                    if (targetKey === 'liters') {
+                        if (price > 0 && cost > 0) litersEl.value = (cost / price).toFixed(2);
+                    } else if (targetKey === 'cost') {
+                        if (vol > 0 && price > 0) costEl.value = (vol * price).toFixed(2);
+                    } else if (targetKey === 'price') {
+                        if (vol > 0 && cost > 0) priceEl.value = (cost / vol).toFixed(3);
+                    }
+                };
+
+                // Initialize derived field without affecting "last 2 inputs" behavior.
+                if (trigger === 'init') {
+                    if (!price && vol > 0 && cost > 0) compute('price');
+                    else if (!cost && vol > 0 && price > 0) compute('cost');
+                    else if (!vol && cost > 0 && price > 0) compute('liters');
+                    return;
+                }
+
+                // Input logic: last 2 edited fields determine the 3rd.
+                if (!this._fuelCalcLast) this._fuelCalcLast = [];
+                const key = trigger === 'vol' ? 'liters' : trigger; // 'cost' | 'price' | 'liters'
+                this._fuelCalcLast = this._fuelCalcLast.filter(k => k !== key);
+                this._fuelCalcLast.push(key);
+                if (this._fuelCalcLast.length > 2) this._fuelCalcLast = this._fuelCalcLast.slice(-2);
+                if (this._fuelCalcLast.length < 2) return;
+
+                const keys = new Set(this._fuelCalcLast);
+                const targetKey = ['liters', 'cost', 'price'].find(k => !keys.has(k));
+                if (!targetKey) return;
+
+                compute(targetKey);
             },
 
             async submitFuel(id) {
@@ -1606,7 +1837,7 @@ END:VCALENDAR`;
                 if (!odo) return alert('Odometer is required');
                 
                 const log = {
-                    id: id || Date.now().toString(),
+                    id: id || utils.newId(),
                     vehicleId: store.data.settings.activeVehicleId,
                     type: 'fuel',
                     date: document.getElementById('l_date').value,
@@ -1625,8 +1856,8 @@ END:VCALENDAR`;
             },
 
             openAddService(id = null, defaultType = 'service') {
-                const log = id ? store.data.logs.find(l => l.id === id) : { date: new Date().toISOString().slice(0, 10), odometer: store.getActiveVehicle()?.currentOdometer || '', type: defaultType, cost: '', location: '', notes: '', expiryDate: '' };
-                const quickTags = ['oil_change','tire_change','battery','brake','inspection'];
+                const log = id ? store.data.logs.find(l => l.id === id) : { date: new Date().toISOString().slice(0, 10), odometer: store.getActiveVehicle()?.currentOdometer || '', type: defaultType, cost: '', location: '', notes: '', expiryDate: '', tirePosition: 'front_left', tireBrand: '' };
+                const quickTags = ['oil_change','tire_change','tire_rotation','alignment','air_filter','cabin_filter','spark_plugs','brake_fluid','transmission_fluid','coolant','wiper_blades','battery','brake','inspection'];
                 
                 this.openModal(`
                     <h2 class="text-xl font-bold mb-4 theme-text-heading">${utils.t('add_service')}</h2>
@@ -1634,6 +1865,7 @@ END:VCALENDAR`;
                         <select id="l_type" class="w-full p-3 rounded-xl font-bold bg-slate-100" onchange="ui.handleTypeChange(this.value)">
                             <option value="service" ${log.type==='service'?'selected':''}>${utils.t('service')}</option>
                             <option value="repair" ${log.type==='repair'?'selected':''}>${utils.t('repair')}</option>
+                            <option value="tire_replace" ${log.type==='tire_replace'?'selected':''}>${utils.t('tire_replace')}</option>
                             <option value="periodic_maintenance" ${log.type==='periodic_maintenance'?'selected':''}>${utils.t('periodic_maintenance')}</option>
                             <option value="car_wash" ${log.type==='car_wash'?'selected':''}>${utils.t('car_wash')}</option>
                             <option value="car_accessories" ${log.type==='car_accessories'?'selected':''}>${utils.t('car_accessories')}</option>
@@ -1657,6 +1889,21 @@ END:VCALENDAR`;
                         </div>
                         
                         <div id="loc_note_fields" class="${['license','insurance','registration'].includes(log.type) ? 'hidden' : ''}">
+                            <div id="tire_fields" class="${log.type === 'tire_replace' ? '' : 'hidden'} bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border theme-border mb-3">
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">${utils.t('tire_positions')}</div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_pos')}</label>
+                                        <select id="l_tire_pos" class="w-full p-3 rounded-xl text-sm">
+                                            ${['front_left','front_right','rear_left','rear_right'].map(p => `<option value="${p}" ${log.tirePosition===p?'selected':''}>${utils.t('tire_'+p)}</option>`).join('')}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs theme-text-sub block mb-1">${utils.t('tire_brand')}</label>
+                                        <input id="l_tire_brand" type="text" value="${log.tireBrand || ''}" class="w-full p-3 rounded-xl text-sm" placeholder="e.g. Michelin Primacy 4">
+                                    </div>
+                                </div>
+                            </div>
                              <div class="relative mb-3">
                                  <label class="text-xs theme-text-sub block mb-1">${utils.t('location')}</label>
                                  <input id="l_loc" type="text" value="${log.location || ''}" class="w-full p-3 rounded-xl pr-10">
@@ -1667,7 +1914,7 @@ END:VCALENDAR`;
                                 ${quickTags.map(t => `<button onclick="document.getElementById('l_notes').value += (document.getElementById('l_notes').value ? ', ' : '') + '${utils.t(t)}'" class="text-[10px] bg-slate-100 px-2 py-1 rounded-full border hover:bg-teal-50 hover:text-teal-600 transition">+ ${utils.t(t)}</button>`).join('')}
                             </div>
                             <div id="fine_tags" class="hidden flex flex-wrap gap-2 mb-2">
-                                ${['parking_ticket','speeding','red_light','illegal_turn'].map(t => `<button onclick="document.getElementById('l_notes').value = '${utils.t(t)}'" class="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded-full border border-red-100 hover:bg-red-100 transition">${utils.t(t)}</button>`).join('')}
+                                ${['parking_ticket','no_parking','speeding','red_light','illegal_turn','bus_lane','seatbelt','phone_use','toll'].map(t => `<button onclick="document.getElementById('l_notes').value = '${utils.t(t)}'" class="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded-full border border-red-100 hover:bg-red-100 transition">${utils.t(t)}</button>`).join('')}
                             </div>
                             
                             <div>
@@ -1689,20 +1936,24 @@ END:VCALENDAR`;
             handleTypeChange(type) {
                 const isDoc = ['license','insurance','registration'].includes(type);
                 const isFine = type === 'fine';
+                const isTire = type === 'tire_replace';
                 document.getElementById('expiry_field').classList.toggle('hidden', !isDoc);
                 document.getElementById('loc_note_fields').classList.toggle('hidden', isDoc);
                 if (!isDoc) {
                     document.getElementById('quick_tags').classList.toggle('hidden', isFine);
                     document.getElementById('fine_tags').classList.toggle('hidden', !isFine);
+                    const tireFields = document.getElementById('tire_fields');
+                    if (tireFields) tireFields.classList.toggle('hidden', !isTire);
                 }
             },
 
             async submitService(id) {
                 const type = document.getElementById('l_type').value;
                 const isDoc = ['license','insurance','registration'].includes(type);
+                const isTire = type === 'tire_replace';
                 
                 const log = {
-                    id: id || Date.now().toString(),
+                    id: id || utils.newId(),
                     vehicleId: store.data.settings.activeVehicleId,
                     type,
                     date: document.getElementById('l_date').value,
@@ -1710,7 +1961,9 @@ END:VCALENDAR`;
                     cost: document.getElementById('l_cost').value,
                     location: isDoc ? '' : document.getElementById('l_loc').value,
                     notes: isDoc ? '' : document.getElementById('l_notes').value,
-                    expiryDate: isDoc ? document.getElementById('l_expiry').value : ''
+                    expiryDate: isDoc ? document.getElementById('l_expiry').value : '',
+                    tirePosition: isTire ? document.getElementById('l_tire_pos')?.value : undefined,
+                    tireBrand: isTire ? document.getElementById('l_tire_brand')?.value : undefined
                 };
                 
                 if (id) await store.updateLog(log);
@@ -1742,7 +1995,7 @@ END:VCALENDAR`;
             
             async submitParking(id) {
                 const log = {
-                    id: id || Date.now().toString(),
+                    id: id || utils.newId(),
                     vehicleId: store.data.settings.activeVehicleId,
                     type: 'parking',
                     date: document.getElementById('p_date').value,
@@ -1795,7 +2048,7 @@ END:VCALENDAR`;
                         reader.onload = async (e) => {
                             try {
                                 const data = JSON.parse(e.target.result);
-                                await store.importData(data);
+                                await store.importData(data, { overwrite: true });
                                 alert(utils.t('success_import'));
                                 location.reload();
                             } catch (err) { alert(utils.t('err_file')); }
@@ -1904,6 +2157,9 @@ END:VCALENDAR`;
         window.addEventListener('DOMContentLoaded', () => ui.init());
         
         if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.error('Service Worker registration failed', err));
+            });
         }
     </script>
 </body>
