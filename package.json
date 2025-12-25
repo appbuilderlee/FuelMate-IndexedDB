@@ -1,7 +1,7 @@
 {
   "name": "fuelmate-indexeddb",
   "private": true,
-  "version": "0.0.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "build:css": "node scripts/generate-tailwind-safelist.mjs && tailwindcss -c tailwind.config.js -i styles/tailwind.css -o public/app.css --minify",

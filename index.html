@@ -182,6 +182,8 @@
                 unsnooze: 'Unsnooze',
                 restore: 'Restore',
                 mark_done: 'Done',
+                load_more: 'Load more',
+                showing: 'Showing',
                 export_json: 'Backup Data (JSON)', import_json: 'Restore Data (JSON)', export_csv: 'Export Excel (CSV)',
                 clear_history: 'Clear Vehicle History', delete_vehicle: 'Delete Vehicle',
                 confirm_delete: 'Are you sure you want to delete this record?',
@@ -216,6 +218,7 @@
                 type_sedan: 'Sedan', type_suv: 'SUV', type_bike: 'Motorcycle', type_truck: 'Truck', type_sports: 'Sports Car', type_van: 'Van', type_bus: 'Bus',
                 about: 'About FuelMate', app_desc: 'A complete PWA for vehicle tracking.',
                 backup_needed: 'Backup Needed', backup_desc: 'You haven\'t backed up in 30 days.', backup_now: 'Backup Now', backup_later: 'Later',
+                add_demo_car: 'Add Demo Car',
                 trip_dist: 'Trip Distance', total_odo: 'Total Odometer', input_mode: 'Input Mode',
                 monthly_spend: 'Monthly Spending',
                 kwh: 'kWh'
@@ -272,6 +275,8 @@
                 unsnooze: '取消延後',
                 restore: '還原',
                 mark_done: '完成',
+                load_more: '載入更多',
+                showing: '顯示',
                 export_json: '匯出資料 (JSON)', import_json: '匯入資料 (JSON)', export_csv: '匯出 Excel (CSV)',
                 clear_history: '清除所有紀錄', delete_vehicle: '刪除車輛',
                 confirm_delete: '確定要刪除此記錄嗎？',
@@ -306,6 +311,7 @@
                 type_sedan: '房車', type_suv: '休旅車', type_bike: '機車', type_truck: '貨車', type_sports: '跑車', type_van: '廂型車', type_bus: '巴士',
                 about: '關於 FuelMate', app_desc: '全功能車輛開支追蹤 PWA。',
                 backup_needed: '備份提醒', backup_desc: '您已經超過 30 天沒有備份資料了。', backup_now: '立即備份', backup_later: '稍後',
+                add_demo_car: '加入示範車 (Demo)',
                 trip_dist: '行駛距離', total_odo: '總里程', input_mode: '輸入模式',
                 monthly_spend: '每月支出',
                 kwh: '度電 (kWh)'
@@ -316,6 +322,7 @@
         const store = {
             db: null,
             dbName: 'FuelMateDB',
+            currentSchemaVersion: 2,
             defaultSettings: { currency: '$', units: 'metric', pressureUnit: 'kPa', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, reminderCenter: { snoozedUntil: {}, done: {} }, lastBackupDate: null, activeVehicleId: null },
             data: { vehicles: [], logs: [], settings: { currency: '$', units: 'metric', pressureUnit: 'kPa', language: 'en', maintenanceDist: 'none', maintenanceTime: 'none', tireReplaceDist: 40000, tireReplaceYears: 4, reminders: {}, reminderCenter: { snoozedUntil: {}, done: {} }, lastBackupDate: null, activeVehicleId: null } },
             pageFilters: { 
@@ -338,6 +345,39 @@
                 fuelFlags: { full: false, partial: false },
                 parkingFlags: { withLocation: false, withNotes: false },
                 remindersTab: 'active'
+            },
+            pageLimits: { fuel: 100, maintenance: 100, parking: 100 },
+            _logsVersion: 0,
+            _cache: {
+                logsSorted: new Map(),
+                logSearchText: new Map(),
+                filtered: new Map()
+            },
+            _bulkImporting: false,
+
+            _invalidateLogsCache() {
+                this._logsVersion += 1;
+                this._cache.logsSorted.clear();
+                this._cache.logSearchText.clear();
+                this._cache.filtered.clear();
+            },
+
+            _getCachedFiltered(key, compute) {
+                const fullKey = `${this._logsVersion}|${this.data.settings.activeVehicleId || 'none'}|${key}`;
+                const cached = this._cache.filtered.get(fullKey);
+                if (cached) return cached;
+                const value = compute();
+                this._cache.filtered.set(fullKey, value);
+                return value;
+            },
+
+            getLogSearchText(log) {
+                if (!log || !log.id) return '';
+                const cached = this._cache.logSearchText.get(log.id);
+                if (cached) return cached;
+                const text = `${log.location || ''}\n${log.notes || ''}`.toLowerCase();
+                this._cache.logSearchText.set(log.id, text);
+                return text;
             },
 
             async init() {
@@ -419,6 +459,62 @@
                 if (!this.data.settings.activeVehicleId && this.data.vehicles.length > 0) {
                     this.data.settings.activeVehicleId = this.data.vehicles[0].id;
                 }
+                this._invalidateLogsCache();
+                await this.migrateSchemaIfNeeded();
+            },
+
+            async migrateSchemaIfNeeded() {
+                const raw = parseInt(this.data.settings.schemaVersion, 10);
+                let schemaVersion = Number.isFinite(raw) ? raw : 1;
+                let changedSettings = false;
+                let updatedLogs = [];
+
+                if (!this.data.settings.schemaVersion) {
+                    this.data.settings.schemaVersion = schemaVersion;
+                    changedSettings = true;
+                }
+
+                while (schemaVersion < this.currentSchemaVersion) {
+                    if (schemaVersion === 1) {
+                        if (!this.data.settings.pressureUnit) {
+                            this.data.settings.pressureUnit = (this.data.settings.units === 'imperial') ? 'psi' : 'kPa';
+                            changedSettings = true;
+                        }
+                        for (const log of this.data.logs) {
+                            if (log && log.type === 'tire_replace' && (log.tirePressureKpa === undefined || log.tirePressureKpa === null || log.tirePressureKpa === '') && log.tirePressure !== undefined && log.tirePressure !== null && log.tirePressure !== '') {
+                                const kpa = utils.pressureToKpa(log.tirePressure, 'psi');
+                                if (kpa !== null) {
+                                    log.tirePressureKpa = kpa.toFixed(1);
+                                    updatedLogs.push(log);
+                                }
+                            }
+                        }
+                        schemaVersion = 2;
+                        continue;
+                    }
+                    schemaVersion = this.currentSchemaVersion;
+                }
+
+                if (schemaVersion !== parseInt(this.data.settings.schemaVersion, 10)) {
+                    this.data.settings.schemaVersion = schemaVersion;
+                    changedSettings = true;
+                }
+
+                if (updatedLogs.length) {
+                    await new Promise((resolve, reject) => {
+                        const tx = this.db.transaction('logs', 'readwrite');
+                        const s = tx.objectStore('logs');
+                        for (const l of updatedLogs) s.put(l);
+                        tx.oncomplete = () => resolve();
+                        tx.onerror = () => reject(tx.error || new Error('Migration log update failed'));
+                        tx.onabort = () => reject(tx.error || new Error('Migration log update aborted'));
+                    });
+                    this._invalidateLogsCache();
+                }
+
+                if (changedSettings) {
+                    await this.saveData();
+                }
             },
 
             async saveData() {
@@ -449,6 +545,7 @@
                     this.data.settings.activeVehicleId = this.data.vehicles.length ? this.data.vehicles[0].id : null;
                     await this.saveData();
                 }
+                this._invalidateLogsCache();
                 await this.runTransaction('vehicles', 'readwrite', s => s.delete(id));
                 const tx = this.db.transaction('logs', 'readwrite');
                 const logStore = tx.objectStore('logs');
@@ -467,10 +564,13 @@
                 
                 // Auto-update vehicle odometer
                 const vehicle = this.data.vehicles.find(v => v.id === log.vehicleId);
-                if (vehicle && log.odometer > vehicle.currentOdometer) {
-                    vehicle.currentOdometer = log.odometer;
+                const odo = parseFloat(log.odometer) || 0;
+                const current = parseFloat(vehicle?.currentOdometer) || 0;
+                if (vehicle && odo > current) {
+                    vehicle.currentOdometer = odo;
                     await this.updateVehicle(vehicle);
                 }
+                if (!this._bulkImporting) this._invalidateLogsCache();
             },
 
             async updateLog(log) {
@@ -478,10 +578,12 @@
                 if (idx !== -1) {
                     this.data.logs[idx] = log;
                     await this.runTransaction('logs', 'readwrite', s => s.put(log));
+                    if (!this._bulkImporting) this._invalidateLogsCache();
                     
                     const vehicle = this.data.vehicles.find(v => v.id === log.vehicleId);
                     const maxOdo = Math.max(...this.data.logs.filter(l => l.vehicleId === log.vehicleId).map(l => parseFloat(l.odometer) || 0));
-                    if (vehicle && maxOdo > vehicle.currentOdometer) {
+                    const current = parseFloat(vehicle?.currentOdometer) || 0;
+                    if (vehicle && maxOdo > current) {
                         vehicle.currentOdometer = maxOdo;
                         await this.updateVehicle(vehicle);
                     }
@@ -491,10 +593,12 @@
             async deleteLog(id) {
                 this.data.logs = this.data.logs.filter(l => l.id !== id);
                 await this.runTransaction('logs', 'readwrite', s => s.delete(id));
+                if (!this._bulkImporting) this._invalidateLogsCache();
             },
 
             async clearVehicleLogs(vehicleId) {
                 this.data.logs = this.data.logs.filter(l => l.vehicleId !== vehicleId);
+                if (!this._bulkImporting) this._invalidateLogsCache();
                 const tx = this.db.transaction('logs', 'readwrite');
                 const idx = tx.objectStore('logs').index('vehicleId');
                 const req = idx.openCursor(IDBKeyRange.only(vehicleId));
@@ -506,6 +610,7 @@
 
             async importData(importedData, options = {}) {
                 const { overwrite = false } = options;
+                this._bulkImporting = true;
                 if (overwrite) {
                     this.data.vehicles = [];
                     this.data.logs = [];
@@ -527,6 +632,8 @@
                     this.data.settings.activeVehicleId = this.data.vehicles[0].id;
                     await this.saveData();
                 }
+                this._bulkImporting = false;
+                this._invalidateLogsCache();
             },
 
             getActiveVehicle() {
@@ -534,9 +641,15 @@
             },
             
             getVehicleLogs(type = null) {
-                let logs = this.data.logs.filter(l => l.vehicleId === this.data.settings.activeVehicleId);
+                const vehicleId = this.data.settings.activeVehicleId;
+                const key = `${vehicleId || 'none'}|${type || '*'}|${this._logsVersion}`;
+                const cached = this._cache.logsSorted.get(key);
+                if (cached) return cached;
+                let logs = this.data.logs.filter(l => l.vehicleId === vehicleId);
                 if (type) logs = logs.filter(l => l.type === type);
-                return logs.sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest first
+                logs = logs.sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest first
+                this._cache.logsSorted.set(key, logs);
+                return logs;
             }
         };
 
@@ -551,6 +664,21 @@
                     return globalThis.crypto.randomUUID();
                 }
                 return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+            },
+            _debounceTimers: new Map(),
+            debounceByKey(key, fn, waitMs = 200) {
+                const t = this._debounceTimers.get(key);
+                if (t) clearTimeout(t);
+                const next = setTimeout(() => {
+                    this._debounceTimers.delete(key);
+                    fn();
+                }, waitMs);
+                this._debounceTimers.set(key, next);
+            },
+            cancelDebounce(key) {
+                const t = this._debounceTimers.get(key);
+                if (t) clearTimeout(t);
+                this._debounceTimers.delete(key);
             },
             csvEscape(value) {
                 const s = value === undefined || value === null ? '' : String(value);
@@ -1165,6 +1293,58 @@ END:VCALENDAR`;
                 }).catch(err => console.error("DB Init Failed", err));
             },
 
+            getPageLimit(pageKey) {
+                const v = store.pageLimits?.[pageKey];
+                return Number.isFinite(v) && v > 0 ? v : 100;
+            },
+
+            _searchDebounceKey(pageKey, filterKey) {
+                return `search:${pageKey}:${filterKey}`;
+            },
+
+            onSearchInput(pageKey, filterKey, value) {
+                const key = this._searchDebounceKey(pageKey, filterKey);
+                utils.debounceByKey(key, () => {
+                    store.pageFilters[filterKey] = value;
+                    this.resetPageLimit(pageKey);
+                    this.render();
+                }, 200);
+            },
+
+            clearSearch(pageKey, filterKey) {
+                const key = this._searchDebounceKey(pageKey, filterKey);
+                utils.cancelDebounce(key);
+                store.pageFilters[filterKey] = '';
+                this.resetPageLimit(pageKey);
+                this.render();
+            },
+
+            resetPageLimit(pageKey) {
+                if (!store.pageLimits) store.pageLimits = {};
+                if (pageKey && Object.prototype.hasOwnProperty.call(store.pageLimits, pageKey)) {
+                    store.pageLimits[pageKey] = 100;
+                }
+            },
+
+            loadMore(pageKey, step = 100) {
+                if (!store.pageLimits) store.pageLimits = {};
+                const curr = this.getPageLimit(pageKey);
+                store.pageLimits[pageKey] = curr + step;
+                this.render();
+            },
+
+            renderLoadMore(pageKey, shown, total) {
+                const safeShown = Math.max(0, Math.min(total || 0, shown || 0));
+                return `
+                    <div class="pt-2 pb-6 flex flex-col items-center gap-2">
+                        <div class="text-[10px] theme-text-sub">${utils.t('showing')} ${safeShown.toLocaleString()} / ${(total || 0).toLocaleString()}</div>
+                        <button onclick="ui.loadMore('${pageKey}')" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading border theme-border active:scale-95 transition-transform">
+                            ${utils.t('load_more')}
+                        </button>
+                    </div>
+                `;
+            },
+
             render() {
                 const app = document.getElementById('app');
                 const page = router.currentPage;
@@ -1207,6 +1387,9 @@ END:VCALENDAR`;
                         <p class="theme-text-sub mb-8">Add your first vehicle to start tracking fuel, costs, and maintenance.</p>
                         <button onclick="ui.openAddVehicle()" class="grad-teal text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-teal-500/30 active:scale-95 transition-transform flex items-center gap-2">
                             <span class="material-icons">add</span> ${utils.t('add_vehicle')}
+                        </button>
+                        <button onclick="ui.addDemoCar()" class="mt-3 bg-white dark:bg-slate-800 theme-text-heading px-8 py-3 rounded-xl font-bold shadow active:scale-95 transition-transform flex items-center gap-2 border theme-border">
+                            <span class="material-icons text-teal-500">auto_awesome</span> ${utils.t('add_demo_car')}
                         </button>
                     </div>
                 `;
@@ -1306,6 +1489,7 @@ END:VCALENDAR`;
                 if (mode === 'month' && !value) value = new Date().toISOString().slice(0, 7);
                 if (mode === 'year' && !value) value = new Date().getFullYear().toString();
                 store.pageFilters[page] = { mode, value };
+                this.resetPageLimit(page);
                 this.render();
             },
 
@@ -1690,19 +1874,24 @@ END:VCALENDAR`;
             renderFuel(vehicle) {
                 const logs = store.getVehicleLogs('fuel');
                 const filter = store.pageFilters.fuel;
-                let filteredLogs = utils.filterLogs(logs, filter);
-                filteredLogs = utils.filterByDateRange(filteredLogs, store.pageFilters.fuelFrom, store.pageFilters.fuelTo);
                 const q = (store.pageFilters.fuelSearch || '').toLowerCase();
-                if (q) {
-                    filteredLogs = filteredLogs.filter(l =>
-                        (l.location && l.location.toLowerCase().includes(q)) ||
-                        (l.notes && l.notes.toLowerCase().includes(q))
-                    );
-                }
                 const fuelFlags = store.pageFilters.fuelFlags || { full: false, partial: false };
-                if (fuelFlags.full && !fuelFlags.partial) filteredLogs = filteredLogs.filter(l => !l.isPartial);
-                if (fuelFlags.partial && !fuelFlags.full) filteredLogs = filteredLogs.filter(l => !!l.isPartial);
+                const from = store.pageFilters.fuelFrom || '';
+                const to = store.pageFilters.fuelTo || '';
+                const filteredLogs = store._getCachedFiltered(
+                    `fuel|${store.data.settings.language || 'en'}|${filter.mode}:${filter.value}|${from}|${to}|${q}|${fuelFlags.full ? 1 : 0}${fuelFlags.partial ? 1 : 0}`,
+                    () => {
+                        let out = utils.filterLogs(logs, filter);
+                        out = utils.filterByDateRange(out, from, to);
+                        if (q) out = out.filter(l => store.getLogSearchText(l).includes(q));
+                        if (fuelFlags.full && !fuelFlags.partial) out = out.filter(l => !l.isPartial);
+                        if (fuelFlags.partial && !fuelFlags.full) out = out.filter(l => !!l.isPartial);
+                        return out;
+                    }
+                );
                 const stats = utils.calculateStats(filteredLogs, 'fuel');
+                const limit = ui.getPageLimit('fuel');
+                const visibleLogs = filteredLogs.slice(0, limit);
                 
                 return `
                     <div class="px-6 pt-safe min-h-screen">
@@ -1713,17 +1902,17 @@ END:VCALENDAR`;
 
                         ${ui.renderSearchPanel({
                             searchValue: store.pageFilters.fuelSearch,
-                            onSearchInput: "store.pageFilters.fuelSearch=this.value;ui.render()",
-                            onClearSearch: "store.pageFilters.fuelSearch='';ui.render()",
+                            onSearchInput: "ui.onSearchInput('fuel','fuelSearch',this.value)",
+                            onClearSearch: "ui.clearSearch('fuel','fuelSearch')",
                             placeholder: "Search notes/location...",
                             fromValue: store.pageFilters.fuelFrom,
                             toValue: store.pageFilters.fuelTo,
-                            onFromChange: "store.pageFilters.fuelFrom=this.value;ui.render()",
-                            onToChange: "store.pageFilters.fuelTo=this.value;ui.render()",
-                            onClearRange: "store.pageFilters.fuelFrom='';store.pageFilters.fuelTo='';ui.render()",
+                            onFromChange: "store.pageFilters.fuelFrom=this.value;ui.resetPageLimit('fuel');ui.render()",
+                            onToChange: "store.pageFilters.fuelTo=this.value;ui.resetPageLimit('fuel');ui.render()",
+                            onClearRange: "store.pageFilters.fuelFrom='';store.pageFilters.fuelTo='';ui.resetPageLimit('fuel');ui.render()",
                             chips: [
-                                { label: "Full", active: !!fuelFlags.full, onClick: "store.pageFilters.fuelFlags={...store.pageFilters.fuelFlags, full: !store.pageFilters.fuelFlags.full};ui.render()" },
-                                { label: "Partial", active: !!fuelFlags.partial, onClick: "store.pageFilters.fuelFlags={...store.pageFilters.fuelFlags, partial: !store.pageFilters.fuelFlags.partial};ui.render()" }
+                                { label: "Full", active: !!fuelFlags.full, onClick: "store.pageFilters.fuelFlags={...store.pageFilters.fuelFlags, full: !store.pageFilters.fuelFlags.full};ui.resetPageLimit('fuel');ui.render()" },
+                                { label: "Partial", active: !!fuelFlags.partial, onClick: "store.pageFilters.fuelFlags={...store.pageFilters.fuelFlags, partial: !store.pageFilters.fuelFlags.partial};ui.resetPageLimit('fuel');ui.render()" }
                             ]
                         })}
 
@@ -1747,7 +1936,8 @@ END:VCALENDAR`;
                         </div>
 
                         <div class="space-y-3 pb-24">
-                            ${filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`}
+                            ${visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`}
+                            ${filteredLogs.length > visibleLogs.length ? ui.renderLoadMore('fuel', visibleLogs.length, filteredLogs.length) : ''}
                         </div>
                         <button onclick="ui.openAddFuel()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full grad-teal text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
                             <span class="material-icons">add</span>
@@ -1757,24 +1947,34 @@ END:VCALENDAR`;
             },
             
             renderMaintenance(vehicle) {
-                const logs = store.getVehicleLogs(); 
-                const maintLogs = logs.filter(l => l.type !== 'fuel' && l.type !== 'parking');
                 const filter = store.pageFilters.maintenance;
                 const view = store.pageFilters.maintenanceView || 'all';
                 const selectedTypes = store.pageFilters.maintenanceTypes || [];
                 
-                let filteredLogs = utils.filterLogs(maintLogs, filter);
-                filteredLogs = utils.filterByDateRange(filteredLogs, store.pageFilters.maintenanceFrom, store.pageFilters.maintenanceTo);
-                if (selectedTypes.length) filteredLogs = filteredLogs.filter(l => selectedTypes.includes(l.type));
-                const query = store.pageFilters.maintenanceSearch.toLowerCase();
-                if (query) {
-                    filteredLogs = filteredLogs.filter(l => 
-                        (l.notes && l.notes.toLowerCase().includes(query)) ||
-                        (l.tireBrand && l.tireBrand.toLowerCase().includes(query)) ||
-                        utils.t(l.type).toLowerCase().includes(query) ||
-                        (l.location && l.location.toLowerCase().includes(query))
-                    );
-                }
+                const query = (store.pageFilters.maintenanceSearch || '').toLowerCase();
+                const from = store.pageFilters.maintenanceFrom || '';
+                const to = store.pageFilters.maintenanceTo || '';
+                const typeKey = (selectedTypes || []).slice().sort().join(',');
+                const filteredLogs = store._getCachedFiltered(
+                    `maintenance|${store.data.settings.language || 'en'}|${filter.mode}:${filter.value}|${from}|${to}|${typeKey}|${query}`,
+                    () => {
+                        const logs = store.getVehicleLogs();
+                        let out = logs.filter(l => l.type !== 'fuel' && l.type !== 'parking');
+                        out = utils.filterLogs(out, filter);
+                        out = utils.filterByDateRange(out, from, to);
+                        if (selectedTypes.length) out = out.filter(l => selectedTypes.includes(l.type));
+                        if (query) {
+                            out = out.filter(l => {
+                                if (store.getLogSearchText(l).includes(query)) return true;
+                                if ((l.tireBrand || '').toLowerCase().includes(query)) return true;
+                                return utils.t(l.type).toLowerCase().includes(query);
+                            });
+                        }
+                        return out;
+                    }
+                );
+                const limit = ui.getPageLimit('maintenance');
+                const visibleLogs = view === 'all' ? filteredLogs.slice(0, limit) : filteredLogs;
                 const stats = utils.calculateStats(filteredLogs, 'maintenance');
                 const tireTimeline = utils.getTireTimeline(vehicle);
                 const tireTimelineFiltered = query
@@ -1790,27 +1990,27 @@ END:VCALENDAR`;
                         
                         ${ui.renderSearchPanel({
                             searchValue: store.pageFilters.maintenanceSearch,
-                            onSearchInput: "store.pageFilters.maintenanceSearch=this.value;ui.render()",
-                            onClearSearch: "store.pageFilters.maintenanceSearch='';ui.render()",
+                            onSearchInput: "ui.onSearchInput('maintenance','maintenanceSearch',this.value)",
+                            onClearSearch: "ui.clearSearch('maintenance','maintenanceSearch')",
                             placeholder: "Search notes/location/brand...",
                             fromValue: store.pageFilters.maintenanceFrom,
                             toValue: store.pageFilters.maintenanceTo,
-                            onFromChange: "store.pageFilters.maintenanceFrom=this.value;ui.render()",
-                            onToChange: "store.pageFilters.maintenanceTo=this.value;ui.render()",
-                            onClearRange: "store.pageFilters.maintenanceFrom='';store.pageFilters.maintenanceTo='';ui.render()"
+                            onFromChange: "store.pageFilters.maintenanceFrom=this.value;ui.resetPageLimit('maintenance');ui.render()",
+                            onToChange: "store.pageFilters.maintenanceTo=this.value;ui.resetPageLimit('maintenance');ui.render()",
+                            onClearRange: "store.pageFilters.maintenanceFrom='';store.pageFilters.maintenanceTo='';ui.resetPageLimit('maintenance');ui.render()"
                         })}
 
                         <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 mb-3">
-                            <button onclick="store.pageFilters.maintenanceView='all'; ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='all'?'bg-white dark:bg-slate-700 shadow':''}">All</button>
-                            <button onclick="store.pageFilters.maintenanceView='tires'; ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='tires'?'bg-white dark:bg-slate-700 shadow':''}">${utils.t('tire_replace')}</button>
+                            <button onclick="store.pageFilters.maintenanceView='all'; ui.resetPageLimit('maintenance'); ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='all'?'bg-white dark:bg-slate-700 shadow':''}">All</button>
+                            <button onclick="store.pageFilters.maintenanceView='tires'; ui.resetPageLimit('maintenance'); ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='tires'?'bg-white dark:bg-slate-700 shadow':''}">${utils.t('tire_replace')}</button>
                         </div>
 
                         ${view === 'all' ? `
                             <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
-                                <button onclick="store.pageFilters.maintenanceTypes=[]; ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${selectedTypes.length ? 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub' : 'bg-teal-600 text-white border-teal-600'}">All</button>
+                                <button onclick="store.pageFilters.maintenanceTypes=[]; ui.resetPageLimit('maintenance'); ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${selectedTypes.length ? 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub' : 'bg-teal-600 text-white border-teal-600'}">All</button>
                                 ${['service','repair','tire_replace','tire_rotation','periodic_maintenance','car_wash','car_accessories','fine','license','insurance','registration'].map(t => {
                                     const active = selectedTypes.includes(t);
-                                    return `<button onclick="const s=store.pageFilters.maintenanceTypes||[]; store.pageFilters.maintenanceTypes = s.includes('${t}') ? s.filter(x=>x!=='${t}') : [...s,'${t}']; ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${active ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/20' : 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub'}">${utils.t(t)}</button>`;
+                                    return `<button onclick="const s=store.pageFilters.maintenanceTypes||[]; store.pageFilters.maintenanceTypes = s.includes('${t}') ? s.filter(x=>x!=='${t}') : [...s,'${t}']; ui.resetPageLimit('maintenance'); ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${active ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/20' : 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub'}">${utils.t(t)}</button>`;
                                 }).join('')}
                             </div>
                         ` : ''}
@@ -1868,7 +2068,8 @@ END:VCALENDAR`;
                                         </div>
                                     `).join('')
                                     : `<div class="text-center theme-text-sub py-12">No tire records found</div>`)
-                                : (filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`)}
+                                : (visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`)}
+                            ${view === 'all' && filteredLogs.length > visibleLogs.length ? ui.renderLoadMore('maintenance', visibleLogs.length, filteredLogs.length) : ''}
                         </div>
                         <button onclick="ui.openAddService()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-white dark:bg-slate-700 theme-text-heading shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50 border theme-border">
                             <span class="material-icons">add</span>
@@ -1880,19 +2081,24 @@ END:VCALENDAR`;
             renderParking(vehicle) {
                 const logs = store.getVehicleLogs('parking');
                 const filter = store.pageFilters.parking;
-                let filteredLogs = utils.filterLogs(logs, filter);
-                filteredLogs = utils.filterByDateRange(filteredLogs, store.pageFilters.parkingFrom, store.pageFilters.parkingTo);
                 const q = (store.pageFilters.parkingSearch || '').toLowerCase();
-                if (q) {
-                    filteredLogs = filteredLogs.filter(l =>
-                        (l.location && l.location.toLowerCase().includes(q)) ||
-                        (l.notes && l.notes.toLowerCase().includes(q))
-                    );
-                }
                 const parkingFlags = store.pageFilters.parkingFlags || { withLocation: false, withNotes: false };
-                if (parkingFlags.withLocation) filteredLogs = filteredLogs.filter(l => !!l.location);
-                if (parkingFlags.withNotes) filteredLogs = filteredLogs.filter(l => !!l.notes);
+                const from = store.pageFilters.parkingFrom || '';
+                const to = store.pageFilters.parkingTo || '';
+                const filteredLogs = store._getCachedFiltered(
+                    `parking|${store.data.settings.language || 'en'}|${filter.mode}:${filter.value}|${from}|${to}|${q}|${parkingFlags.withLocation ? 1 : 0}${parkingFlags.withNotes ? 1 : 0}`,
+                    () => {
+                        let out = utils.filterLogs(logs, filter);
+                        out = utils.filterByDateRange(out, from, to);
+                        if (q) out = out.filter(l => store.getLogSearchText(l).includes(q));
+                        if (parkingFlags.withLocation) out = out.filter(l => !!l.location);
+                        if (parkingFlags.withNotes) out = out.filter(l => !!l.notes);
+                        return out;
+                    }
+                );
                 const stats = utils.calculateStats(filteredLogs, 'parking');
+                const limit = ui.getPageLimit('parking');
+                const visibleLogs = filteredLogs.slice(0, limit);
                 
                 return `
                      <div class="px-6 pt-safe min-h-screen">
@@ -1903,17 +2109,17 @@ END:VCALENDAR`;
 
                         ${ui.renderSearchPanel({
                             searchValue: store.pageFilters.parkingSearch,
-                            onSearchInput: "store.pageFilters.parkingSearch=this.value;ui.render()",
-                            onClearSearch: "store.pageFilters.parkingSearch='';ui.render()",
+                            onSearchInput: "ui.onSearchInput('parking','parkingSearch',this.value)",
+                            onClearSearch: "ui.clearSearch('parking','parkingSearch')",
                             placeholder: "Search notes/location...",
                             fromValue: store.pageFilters.parkingFrom,
                             toValue: store.pageFilters.parkingTo,
-                            onFromChange: "store.pageFilters.parkingFrom=this.value;ui.render()",
-                            onToChange: "store.pageFilters.parkingTo=this.value;ui.render()",
-                            onClearRange: "store.pageFilters.parkingFrom='';store.pageFilters.parkingTo='';ui.render()",
+                            onFromChange: "store.pageFilters.parkingFrom=this.value;ui.resetPageLimit('parking');ui.render()",
+                            onToChange: "store.pageFilters.parkingTo=this.value;ui.resetPageLimit('parking');ui.render()",
+                            onClearRange: "store.pageFilters.parkingFrom='';store.pageFilters.parkingTo='';ui.resetPageLimit('parking');ui.render()",
                             chips: [
-                                { label: "Has Location", active: !!parkingFlags.withLocation, onClick: "store.pageFilters.parkingFlags={...store.pageFilters.parkingFlags, withLocation: !store.pageFilters.parkingFlags.withLocation};ui.render()" },
-                                { label: "Has Notes", active: !!parkingFlags.withNotes, onClick: "store.pageFilters.parkingFlags={...store.pageFilters.parkingFlags, withNotes: !store.pageFilters.parkingFlags.withNotes};ui.render()" }
+                                { label: "Has Location", active: !!parkingFlags.withLocation, onClick: "store.pageFilters.parkingFlags={...store.pageFilters.parkingFlags, withLocation: !store.pageFilters.parkingFlags.withLocation};ui.resetPageLimit('parking');ui.render()" },
+                                { label: "Has Notes", active: !!parkingFlags.withNotes, onClick: "store.pageFilters.parkingFlags={...store.pageFilters.parkingFlags, withNotes: !store.pageFilters.parkingFlags.withNotes};ui.resetPageLimit('parking');ui.render()" }
                             ]
                         })}
                         
@@ -1923,7 +2129,8 @@ END:VCALENDAR`;
                         </div>
                         
                         <div class="space-y-3 pb-24">
-                            ${filteredLogs.length ? filteredLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records yet</div>`}
+                            ${visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records yet</div>`}
+                            ${filteredLogs.length > visibleLogs.length ? ui.renderLoadMore('parking', visibleLogs.length, filteredLogs.length) : ''}
                         </div>
                         <button onclick="ui.openAddParking()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
                             <span class="material-icons">add</span>
@@ -2046,6 +2253,7 @@ END:VCALENDAR`;
                                 </div>
                             `).join('')}
                             <button onclick="ui.openAddVehicle()" class="w-full mt-4 py-2 border border-dashed border-teal-500 text-teal-600 rounded-xl text-sm font-bold hover:bg-teal-50 dark:hover:bg-teal-900/20 transition">+ ${utils.t('add_vehicle')}</button>
+                            <button onclick="ui.addDemoCar()" class="w-full mt-2 py-2 border border-dashed theme-border theme-text-heading rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition">${utils.t('add_demo_car')}</button>
                         </div>
                         
                         <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 card-shadow mb-6">
@@ -2155,7 +2363,7 @@ END:VCALENDAR`;
                             <button onclick="ui.openAboutModal()" class="text-teal-600 text-sm font-bold flex items-center justify-center gap-2 opacity-80 hover:opacity-100">
                                 <span class="material-icons">info</span> ${utils.t('about')}
                             </button>
-                            <div class="text-[10px] theme-text-sub mt-2">v2.1 IndexedDB • Built for iOS</div>
+                            <div class="text-[10px] theme-text-sub mt-2">v3.0 IndexedDB • Built for iOS</div>
                         </div>
                     </div>
                 `;
@@ -2474,6 +2682,113 @@ END:VCALENDAR`;
                         }, 200);
                     }
                 }, 50);
+            },
+
+            async addDemoCar() {
+                const existing = store.data.vehicles.find(v => v.make === 'DEMO' && v.model === 'Car');
+                if (existing) {
+                    store.data.settings.activeVehicleId = existing.id;
+                    await store.saveData();
+                    this.render();
+                    return;
+                }
+
+                const now = new Date();
+                const isoDaysAgo = (daysAgo) => {
+                    const d = new Date(now);
+                    d.setDate(d.getDate() - daysAgo);
+                    return d.toISOString().slice(0, 10);
+                };
+                const isoDaysFromNow = (daysFromNow) => {
+                    const d = new Date(now);
+                    d.setDate(d.getDate() + daysFromNow);
+                    return d.toISOString().slice(0, 10);
+                };
+
+                const vehicleId = utils.newId();
+                const demoVehicle = {
+                    id: vehicleId,
+                    make: 'DEMO',
+                    model: 'Car',
+                    year: now.getFullYear(),
+                    currentOdometer: 24222,
+                    color: 'teal',
+                    type: 'sedan',
+                    fuelUnit: (store.data.settings.units === 'imperial') ? 'Gal' : 'L',
+                    driveType: 'fwd'
+                };
+
+                await store.addVehicle(demoVehicle);
+                store.data.settings.activeVehicleId = vehicleId;
+
+                if (!Number.isFinite(parseInt(store.data.settings.maintenanceDist))) store.data.settings.maintenanceDist = '5000';
+                if (!Number.isFinite(parseInt(store.data.settings.maintenanceTime))) store.data.settings.maintenanceTime = '6';
+                if (!store.data.settings.tireReplaceDist) store.data.settings.tireReplaceDist = 40000;
+                if (!store.data.settings.tireReplaceYears) store.data.settings.tireReplaceYears = 4;
+                await store.saveData();
+
+                const add = async (log) => store.addLog({ id: utils.newId(), vehicleId, ...log });
+
+                const demoFuelNotes = store.data.settings.language === 'zh' ? '示範：加油記錄' : 'Demo: fuel log';
+                await add({ type: 'fuel', date: isoDaysAgo(150), odometer: 18000, liters: '42.0', cost: '560', location: 'Shell', notes: demoFuelNotes, isPartial: false });
+                await add({ type: 'fuel', date: isoDaysAgo(132), odometer: 18620, liters: '10.0', cost: '135', location: 'Shell', notes: store.data.settings.language === 'zh' ? '示範：Partial' : 'Demo: partial', isPartial: true });
+                await add({ type: 'fuel', date: isoDaysAgo(120), odometer: 19010, liters: '39.5', cost: '520', location: 'Esso', notes: demoFuelNotes, isPartial: false });
+                await add({ type: 'fuel', date: isoDaysAgo(90), odometer: 20180, liters: '41.2', cost: '545', location: 'Caltex', notes: demoFuelNotes, isPartial: false });
+                await add({ type: 'fuel', date: isoDaysAgo(60), odometer: 21480, liters: '40.1', cost: '532', location: 'Caltex', notes: demoFuelNotes, isPartial: false });
+                await add({ type: 'fuel', date: isoDaysAgo(20), odometer: 23390, liters: '38.6', cost: '512', location: 'Shell', notes: demoFuelNotes, isPartial: false });
+
+                await add({ type: 'parking', date: isoDaysAgo(18), cost: '48', location: 'Central', notes: store.data.settings.language === 'zh' ? '示範：停車場' : 'Demo: parking' });
+                await add({ type: 'parking', date: isoDaysAgo(7), cost: '36', location: 'Mall', notes: store.data.settings.language === 'zh' ? '示範：短泊' : 'Demo: short stay' });
+
+                await add({ type: 'service', date: isoDaysAgo(75), odometer: 20600, cost: '880', location: 'Garage', notes: store.data.settings.language === 'zh' ? '示範：更換機油' : 'Demo: oil change' });
+                await add({ type: 'repair', date: isoDaysAgo(35), odometer: 22400, cost: '320', location: 'Garage', notes: store.data.settings.language === 'zh' ? '示範：更換雨刷' : 'Demo: wiper blades' });
+                await add({ type: 'car_wash', date: isoDaysAgo(12), odometer: 23500, cost: '80', location: 'Car Wash', notes: store.data.settings.language === 'zh' ? '示範：洗車' : 'Demo: car wash' });
+                await add({ type: 'car_accessories', date: isoDaysAgo(5), odometer: 24050, cost: '199', location: '', notes: store.data.settings.language === 'zh' ? '示範：配件' : 'Demo: accessories' });
+                await add({ type: 'periodic_maintenance', date: isoDaysAgo(160), odometer: 17500, cost: '0', location: '', notes: store.data.settings.language === 'zh' ? '示範：定期保養提醒' : 'Demo: periodic maintenance' });
+
+                await add({ type: 'fine', date: isoDaysAgo(28), odometer: 23000, cost: '450', location: '', notes: 'speeding, demo' });
+
+                await add({ type: 'license', date: isoDaysAgo(10), odometer: 23800, cost: '600', expiryDate: isoDaysFromNow(14), location: '', notes: '' });
+                await add({ type: 'insurance', date: isoDaysAgo(9), odometer: 23810, cost: '1200', expiryDate: isoDaysFromNow(25), location: '', notes: '' });
+                await add({ type: 'registration', date: isoDaysAgo(8), odometer: 23820, cost: '300', expiryDate: isoDaysFromNow(7), location: '', notes: '' });
+
+                const mkTireReplace = async (pos, daysAgo, odo, brand, treadMm, pressureKpa) => {
+                    await add({
+                        type: 'tire_replace',
+                        date: isoDaysAgo(daysAgo),
+                        odometer: odo,
+                        cost: pos === 'front_left' ? '900' : '',
+                        location: '',
+                        notes: store.data.settings.language === 'zh' ? '示範：更換輪胎' : 'Demo: tire replace',
+                        tirePosition: pos,
+                        tireBrand: brand,
+                        tireTread: String(treadMm),
+                        tirePressureKpa: String(pressureKpa),
+                        tireAlignment: pos === 'front_left',
+                        tireBalancing: true,
+                        tireId: utils.newId()
+                    });
+                };
+
+                await mkTireReplace('front_left', 1440, 1200, 'Michelin', 7.0, 240);
+                await mkTireReplace('front_right', 400, 8000, 'Michelin', 6.5, 240);
+                await mkTireReplace('rear_left', 600, 5000, 'Michelin', 6.8, 240);
+                await mkTireReplace('rear_right', 600, 5000, 'Michelin', 6.8, 240);
+
+                await add({
+                    type: 'tire_rotation',
+                    date: isoDaysAgo(55),
+                    odometer: 21600,
+                    cost: '',
+                    location: '',
+                    notes: store.data.settings.language === 'zh' ? '示範：輪胎換位（前後互換）' : 'Demo: tire rotation (front ↔ rear)',
+                    tireSwaps: [{ a: 'front_left', b: 'rear_left' }, { a: 'front_right', b: 'rear_right' }],
+                    tireSwapA: 'front_left',
+                    tireSwapB: 'rear_left'
+                });
+
+                await store.updateVehicle(demoVehicle);
+                this.render();
             },
 
             openAddFuel(id = null) {
@@ -3159,33 +3474,66 @@ END:VCALENDAR`;
             },
             
             openAboutModal() {
+                const lang = store.data.settings.language || 'en';
+                const isZh = lang === 'zh';
+                const title = isZh ? 'FuelMate（本地優先 PWA）' : 'FuelMate (Local-first PWA)';
+                const subtitle = isZh ? 'v3.0（IndexedDB 版本）' : 'v3.0 (IndexedDB Edition)';
+                const intro = isZh
+                    ? '一個把加油、維修、停車、罰單、證件到期同輪胎更換/換位集中管理嘅本地優先 App。資料預設只存喺你部機，支援離線使用同備份匯入。'
+                    : 'A local-first app to track fuel, maintenance, parking, fines, document expiry, and tire replacement/rotation. Your data stays on-device by default, with offline support and easy backups.';
+                const featuresTitle = isZh ? '主要功能' : 'Key Features';
+                const specsTitle = isZh ? '重點設計' : 'Design Notes';
+                const footer = isZh ? '為私隱與長期使用而設計。' : 'Designed for privacy and long-term use.';
+                const features = isZh
+                    ? [
+                        '多車管理 + 里程維護',
+                        '加油記錄：單價/金額/升數互算；Full/Partial 油耗邏輯',
+                        '維修/保養/停車/罰單記錄 + 統一搜尋/篩選',
+                        '輪胎四條獨立追蹤：更換 + 換位（Rotation）+ timeline',
+                        '提醒中心：輪胎/證件/定期保養整合（Snooze/Done）',
+                        'JSON/CSV 匯出；匯入前自動備份 + 匯入摘要（更安心）'
+                    ]
+                    : [
+                        'Multi-vehicle support with odometer tracking',
+                        'Fuel logs with smart Price/Cost/Volume calculation and Full/Partial logic',
+                        'Maintenance/Parking/Fines with unified search & filters',
+                        'Per-tire tracking: replacement + rotation + timeline',
+                        'Reminder Center for tires/docs/periodic service (Snooze/Done)',
+                        'JSON/CSV export; safer import with auto-backup + import summary'
+                    ];
+                const specs = isZh
+                    ? [
+                        '本地優先：IndexedDB 儲存（無需登入/伺服器）',
+                        'PWA 可安裝到主畫面；離線仍可查看/新增',
+                    ]
+                    : [
+                        'Local-first storage via IndexedDB (no login, no server required)',
+                        'Installable PWA; works offline for viewing and adding logs',
+                        '“Load more” pagination for smoother long lists on mobile',
+                        'Mostly single-file for simple deployment (e.g., GitHub Pages)'
+                    ];
+
                  this.openModal(`
                     <div class="text-center p-4">
                         <div class="w-20 h-20 mx-auto rounded-3xl grad-teal flex items-center justify-center text-white shadow-xl mb-4">
                             <span class="material-icons text-5xl">local_gas_station</span>
                         </div>
-                        <h2 class="text-2xl font-black theme-text-heading mb-1">FuelMate</h2>
-                        <div class="text-sm theme-text-sub mb-6">v2.1 (IndexedDB Edition)</div>
+                        <h2 class="text-2xl font-black theme-text-heading mb-1">${title}</h2>
+                        <div class="text-sm theme-text-sub mb-3">${subtitle}</div>
+                        <div class="text-sm theme-text-sub mb-6">${intro}</div>
                         
                         <div class="text-left space-y-4 text-sm theme-text-heading bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
-                            <h3 class="font-bold border-b pb-2 mb-2">Features</h3>
+                            <h3 class="font-bold border-b pb-2 mb-2">${featuresTitle}</h3>
                             <ul class="list-disc pl-5 space-y-1 opacity-80">
-                                <li>Complete Vehicle Cost Tracking</li>
-                                <li>Fuel (Gas/EV) & Efficiency Analysis</li>
-                                <li>Maintenance, Parking, Fines logging</li>
-                                <li>Document Expiry Reminders</li>
-                                <li>Offline-First (No Server)</li>
+                                ${features.map(f => `<li>${f}</li>`).join('')}
                             </ul>
                             
-                            <h3 class="font-bold border-b pb-2 mb-2 mt-4">Tech Specs</h3>
+                            <h3 class="font-bold border-b pb-2 mb-2 mt-4">${specsTitle}</h3>
                             <ul class="list-disc pl-5 space-y-1 opacity-80">
-                                <li>Single-File PWA Architecture</li>
-                                <li>IndexedDB Storage (>500MB capacity)</li>
-                                <li>Client-side SVG Charts & Icon Gen</li>
-                                <li>iOS Safe-Area Optimized</li>
+                                ${specs.map(s => `<li>${s}</li>`).join('')}
                             </ul>
                         </div>
-                        <div class="mt-6 text-xs text-slate-400">Designed for longevity & privacy.</div>
+                        <div class="mt-6 text-xs text-slate-400">${footer}</div>
                     </div>
                  `);
             }
