@@ -288,7 +288,15 @@
                 maintenanceTypes: [],
                 maintenanceView: 'all',
                 fuelSearch: '',
-                parkingSearch: ''
+                parkingSearch: '',
+                fuelFrom: '',
+                fuelTo: '',
+                parkingFrom: '',
+                parkingTo: '',
+                maintenanceFrom: '',
+                maintenanceTo: '',
+                fuelFlags: { full: false, partial: false },
+                parkingFlags: { withLocation: false, withNotes: false }
             },
 
             async init() {
@@ -532,8 +540,33 @@
             },
             getEfficiencyLabel() {
                  const v = store.getActiveVehicle();
-                 if (v && v.fuelUnit === 'kWh') return `kWh/100${utils.getDistUnit()}`;
-                 return store.data.settings.units === 'imperial' ? 'MPG' : 'L/100km'; 
+                 const distUnit = utils.getDistUnit();
+                 const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (store.data.settings.units === 'imperial' ? 'Gal' : 'L');
+                 if (fuelUnit === 'kWh') return `kWh/100${distUnit}`;
+                 if (distUnit === 'mi' && fuelUnit === 'Gal') return 'MPG';
+                 return `${fuelUnit}/100${distUnit}`;
+            },
+            calcEfficiencyValue(fuelAmount, distAmount, fuelUnit, distUnit) {
+                const f = parseFloat(fuelAmount) || 0;
+                const d = parseFloat(distAmount) || 0;
+                if (d <= 0 || f <= 0) return null;
+                if (distUnit === 'mi' && fuelUnit === 'Gal') return d / f; // MPG
+                return (f / d) * 100; // per 100 distance
+            },
+            filterByDateRange(logs, fromIso, toIso) {
+                if (!fromIso && !toIso) return logs;
+                const from = fromIso ? new Date(fromIso) : null;
+                const to = toIso ? new Date(toIso) : null;
+                return logs.filter(l => {
+                    const d = new Date(l.date);
+                    if (from && d < from) return false;
+                    if (to) {
+                        const end = new Date(to);
+                        end.setHours(23, 59, 59, 999);
+                        if (d > end) return false;
+                    }
+                    return true;
+                });
             },
             getTirePositions() { return ['front_left','front_right','rear_left','rear_right']; },
             formatDaysShort(days) {
@@ -725,6 +758,8 @@
                     const v = store.getActiveVehicle();
                     const isImperial = store.data.settings.units === 'imperial';
                     const isEV = v && v.fuelUnit === 'kWh';
+                    const distUnit = utils.getDistUnit();
+                    const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (isImperial ? 'Gal' : 'L');
                     
                     if (fuelLogs.length > 1) {
                         let totalFuel = 0;
@@ -745,9 +780,8 @@
                         }
                         
                         if (validDist > 0 && totalFuel > 0) {
-                            if (isEV) efficiency = (totalFuel / validDist * 100).toFixed(1);
-                            else if (isImperial) efficiency = (validDist / totalFuel).toFixed(1);
-                            else efficiency = (totalFuel / validDist * 100).toFixed(1);
+                            const eff = utils.calcEfficiencyValue(totalFuel, validDist, fuelUnit, distUnit);
+                            if (eff !== null) efficiency = eff.toFixed(1);
                         }
                     }
                 }
@@ -780,6 +814,8 @@
                 const v = store.getActiveVehicle();
                 const isImperial = store.data.settings.units === 'imperial';
                 const isEV = v && v.fuelUnit === 'kWh';
+                const distUnit = utils.getDistUnit();
+                const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (isImperial ? 'Gal' : 'L');
                 
                 const dataPoints = [];
                 for (let i = 0; i < fuelLogs.length - 1; i++) {
@@ -787,7 +823,7 @@
                      if (dist > 0) {
                          const fuel = parseFloat(fuelLogs[i+1].liters) || 0;
                          if (fuel > 0) {
-                             const eff = isEV ? (fuel / dist * 100) : (isImperial ? (dist / fuel) : (fuel / dist * 100));
+                             const eff = utils.calcEfficiencyValue(fuel, dist, fuelUnit, distUnit);
                              dataPoints.push(eff);
                          }
                      }
@@ -1097,6 +1133,55 @@ END:VCALENDAR`;
                         <button onclick="ui.openAddVehicle()" class="grad-teal text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-teal-500/30 active:scale-95 transition-transform flex items-center gap-2">
                             <span class="material-icons">add</span> ${utils.t('add_vehicle')}
                         </button>
+                    </div>
+                `;
+            },
+
+            renderSearchPanel(opts) {
+                const {
+                    searchValue = '',
+                    onSearchInput = '',
+                    onClearSearch = '',
+                    placeholder = 'Search...',
+                    fromValue = '',
+                    toValue = '',
+                    onFromChange = '',
+                    onToChange = '',
+                    onClearRange = '',
+                    chips = []
+                } = opts || {};
+
+                const hasRange = onFromChange || onToChange;
+                const hasSearch = onSearchInput;
+                return `
+                    <div class="space-y-3 mb-4">
+                        ${hasSearch ? `
+                            <div class="relative">
+                                <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
+                                <input type="text" placeholder="${placeholder}" value="${searchValue || ''}" oninput="${onSearchInput}" class="w-full pl-10 pr-10 py-2 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
+                                ${searchValue ? `<button onclick="${onClearSearch}" class="absolute right-2 top-2 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><span class="material-icons text-slate-500 text-base">close</span></button>` : ''}
+                            </div>
+                        ` : ''}
+
+                        ${hasRange ? `
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="relative">
+                                    <input type="date" value="${fromValue || ''}" onchange="${onFromChange}" class="w-full p-2.5 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
+                                </div>
+                                <div class="relative">
+                                    <input type="date" value="${toValue || ''}" onchange="${onToChange}" class="w-full p-2.5 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
+                                </div>
+                            </div>
+                            ${(fromValue || toValue) ? `<button onclick="${onClearRange}" class="w-full py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 theme-text-heading">${utils.t('cancel')}</button>` : ''}
+                        ` : ''}
+
+                        ${chips && chips.length ? `
+                            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                                ${chips.map(c => `
+                                    <button onclick="${c.onClick}" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${c.active ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/20' : 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub'}">${c.label}</button>
+                                `).join('')}
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             },
@@ -1504,6 +1589,7 @@ END:VCALENDAR`;
                 const logs = store.getVehicleLogs('fuel');
                 const filter = store.pageFilters.fuel;
                 let filteredLogs = utils.filterLogs(logs, filter);
+                filteredLogs = utils.filterByDateRange(filteredLogs, store.pageFilters.fuelFrom, store.pageFilters.fuelTo);
                 const q = (store.pageFilters.fuelSearch || '').toLowerCase();
                 if (q) {
                     filteredLogs = filteredLogs.filter(l =>
@@ -1511,6 +1597,9 @@ END:VCALENDAR`;
                         (l.notes && l.notes.toLowerCase().includes(q))
                     );
                 }
+                const fuelFlags = store.pageFilters.fuelFlags || { full: false, partial: false };
+                if (fuelFlags.full && !fuelFlags.partial) filteredLogs = filteredLogs.filter(l => !l.isPartial);
+                if (fuelFlags.partial && !fuelFlags.full) filteredLogs = filteredLogs.filter(l => !!l.isPartial);
                 const stats = utils.calculateStats(filteredLogs, 'fuel');
                 
                 return `
@@ -1520,10 +1609,21 @@ END:VCALENDAR`;
                         </div>
                         <div class="mb-4">${this.renderFilterHeader('fuel', filter)}</div>
 
-                        <div class="mb-4 relative">
-                            <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
-                            <input type="text" placeholder="Search..." value="${store.pageFilters.fuelSearch}" oninput="store.pageFilters.fuelSearch=this.value;ui.render()" class="w-full pl-10 pr-4 py-2 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
-                        </div>
+                        ${ui.renderSearchPanel({
+                            searchValue: store.pageFilters.fuelSearch,
+                            onSearchInput: "store.pageFilters.fuelSearch=this.value;ui.render()",
+                            onClearSearch: "store.pageFilters.fuelSearch='';ui.render()",
+                            placeholder: "Search notes/location...",
+                            fromValue: store.pageFilters.fuelFrom,
+                            toValue: store.pageFilters.fuelTo,
+                            onFromChange: "store.pageFilters.fuelFrom=this.value;ui.render()",
+                            onToChange: "store.pageFilters.fuelTo=this.value;ui.render()",
+                            onClearRange: "store.pageFilters.fuelFrom='';store.pageFilters.fuelTo='';ui.render()",
+                            chips: [
+                                { label: "Full", active: !!fuelFlags.full, onClick: "store.pageFilters.fuelFlags={...store.pageFilters.fuelFlags, full: !store.pageFilters.fuelFlags.full};ui.render()" },
+                                { label: "Partial", active: !!fuelFlags.partial, onClick: "store.pageFilters.fuelFlags={...store.pageFilters.fuelFlags, partial: !store.pageFilters.fuelFlags.partial};ui.render()" }
+                            ]
+                        })}
 
                         <div class="grid grid-cols-2 gap-3 mb-6">
                             <div class="theme-bg-card p-3 rounded-xl card-shadow border-l-4 border-teal-500">
@@ -1562,6 +1662,7 @@ END:VCALENDAR`;
                 const selectedTypes = store.pageFilters.maintenanceTypes || [];
                 
                 let filteredLogs = utils.filterLogs(maintLogs, filter);
+                filteredLogs = utils.filterByDateRange(filteredLogs, store.pageFilters.maintenanceFrom, store.pageFilters.maintenanceTo);
                 if (selectedTypes.length) filteredLogs = filteredLogs.filter(l => selectedTypes.includes(l.type));
                 const query = store.pageFilters.maintenanceSearch.toLowerCase();
                 if (query) {
@@ -1585,10 +1686,17 @@ END:VCALENDAR`;
                         </div>
                         <div class="mb-4">${this.renderFilterHeader('maintenance', filter)}</div>
                         
-                        <div class="mb-4 relative">
-                            <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
-                            <input type="text" placeholder="Search logs..." value="${store.pageFilters.maintenanceSearch}" oninput="store.pageFilters.maintenanceSearch=this.value;ui.render()" class="w-full pl-10 pr-4 py-2 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-teal-500 text-sm">
-                        </div>
+                        ${ui.renderSearchPanel({
+                            searchValue: store.pageFilters.maintenanceSearch,
+                            onSearchInput: "store.pageFilters.maintenanceSearch=this.value;ui.render()",
+                            onClearSearch: "store.pageFilters.maintenanceSearch='';ui.render()",
+                            placeholder: "Search notes/location/brand...",
+                            fromValue: store.pageFilters.maintenanceFrom,
+                            toValue: store.pageFilters.maintenanceTo,
+                            onFromChange: "store.pageFilters.maintenanceFrom=this.value;ui.render()",
+                            onToChange: "store.pageFilters.maintenanceTo=this.value;ui.render()",
+                            onClearRange: "store.pageFilters.maintenanceFrom='';store.pageFilters.maintenanceTo='';ui.render()"
+                        })}
 
                         <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 mb-3">
                             <button onclick="store.pageFilters.maintenanceView='all'; ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='all'?'bg-white dark:bg-slate-700 shadow':''}">All</button>
@@ -1671,6 +1779,7 @@ END:VCALENDAR`;
                 const logs = store.getVehicleLogs('parking');
                 const filter = store.pageFilters.parking;
                 let filteredLogs = utils.filterLogs(logs, filter);
+                filteredLogs = utils.filterByDateRange(filteredLogs, store.pageFilters.parkingFrom, store.pageFilters.parkingTo);
                 const q = (store.pageFilters.parkingSearch || '').toLowerCase();
                 if (q) {
                     filteredLogs = filteredLogs.filter(l =>
@@ -1678,6 +1787,9 @@ END:VCALENDAR`;
                         (l.notes && l.notes.toLowerCase().includes(q))
                     );
                 }
+                const parkingFlags = store.pageFilters.parkingFlags || { withLocation: false, withNotes: false };
+                if (parkingFlags.withLocation) filteredLogs = filteredLogs.filter(l => !!l.location);
+                if (parkingFlags.withNotes) filteredLogs = filteredLogs.filter(l => !!l.notes);
                 const stats = utils.calculateStats(filteredLogs, 'parking');
                 
                 return `
@@ -1687,10 +1799,21 @@ END:VCALENDAR`;
                         </div>
                         <div class="mb-4">${this.renderFilterHeader('parking', filter)}</div>
 
-                        <div class="mb-4 relative">
-                            <span class="material-icons absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
-                            <input type="text" placeholder="Search..." value="${store.pageFilters.parkingSearch}" oninput="store.pageFilters.parkingSearch=this.value;ui.render()" class="w-full pl-10 pr-4 py-2 rounded-xl theme-bg-card theme-text-heading shadow-sm border-none focus:ring-2 focus:ring-blue-500 text-sm">
-                        </div>
+                        ${ui.renderSearchPanel({
+                            searchValue: store.pageFilters.parkingSearch,
+                            onSearchInput: "store.pageFilters.parkingSearch=this.value;ui.render()",
+                            onClearSearch: "store.pageFilters.parkingSearch='';ui.render()",
+                            placeholder: "Search notes/location...",
+                            fromValue: store.pageFilters.parkingFrom,
+                            toValue: store.pageFilters.parkingTo,
+                            onFromChange: "store.pageFilters.parkingFrom=this.value;ui.render()",
+                            onToChange: "store.pageFilters.parkingTo=this.value;ui.render()",
+                            onClearRange: "store.pageFilters.parkingFrom='';store.pageFilters.parkingTo='';ui.render()",
+                            chips: [
+                                { label: "Has Location", active: !!parkingFlags.withLocation, onClick: "store.pageFilters.parkingFlags={...store.pageFilters.parkingFlags, withLocation: !store.pageFilters.parkingFlags.withLocation};ui.render()" },
+                                { label: "Has Notes", active: !!parkingFlags.withNotes, onClick: "store.pageFilters.parkingFlags={...store.pageFilters.parkingFlags, withNotes: !store.pageFilters.parkingFlags.withNotes};ui.render()" }
+                            ]
+                        })}
                         
                         <div class="theme-bg-card p-4 rounded-2xl card-shadow mb-6">
                              <div class="text-xs theme-text-sub uppercase tracking-wider">${utils.t('parking_fee')}</div>
@@ -1991,6 +2114,8 @@ END:VCALENDAR`;
                     const v = store.getActiveVehicle();
                     const isImperial = store.data.settings.units === 'imperial';
                     const isEV = v && v.fuelUnit === 'kWh';
+                    const distUnit = utils.getDistUnit();
+                    const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (isImperial ? 'Gal' : 'L');
                     
                     // Logic to span over Partial logs
                     if (!log.isPartial) {
@@ -2021,9 +2146,8 @@ END:VCALENDAR`;
                              
                              if (dist > 0) {
                                  if (totalFuel > 0) {
-                                     if (isEV) effVal = ((totalFuel / dist) * 100).toFixed(1);
-                                     else if (isImperial) effVal = (dist / totalFuel).toFixed(1);
-                                     else effVal = ((totalFuel / dist) * 100).toFixed(1);
+                                     const eff = utils.calcEfficiencyValue(totalFuel, dist, fuelUnit, distUnit);
+                                     if (eff !== null) effVal = eff.toFixed(1);
                                  }
                                  costKm = (totalCost / dist).toFixed(2);
                              }
