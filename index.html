@@ -168,6 +168,16 @@
                 confirm_clear: 'WARNING: This will delete ALL logs for this vehicle. Are you sure?',
                 confirm_clear_2: 'Double Check: This cannot be undone. Delete everything?',
                 import_warn: 'WARNING: This will overwrite your current data. Continue?',
+                import_summary: 'Import Summary',
+                import_file: 'File',
+                import_current: 'Current',
+                import_incoming: 'Incoming',
+                import_counts: 'Counts',
+                import_types: 'Types',
+                import_settings: 'Settings',
+                import_invalid: 'Invalid backup file.',
+                import_autobackup: 'Auto-backup downloaded:',
+                import_overwrite: 'Backup & Overwrite',
                 units: 'Units', currency: 'Currency', language: 'Language',
                 metric: 'Metric (L, km)', imperial: 'Imperial (Gal, mi)',
                 success_import: 'Data imported successfully!', err_file: 'Invalid file format',
@@ -228,6 +238,16 @@
                 confirm_clear: '警告：這將刪除此車輛的所有記錄。確定嗎？',
                 confirm_clear_2: '再次確認：刪除後無法恢復。確定要清空嗎？',
                 import_warn: '警告：這將覆蓋您當前的所有資料。是否繼續？',
+                import_summary: '匯入摘要',
+                import_file: '檔案',
+                import_current: '目前',
+                import_incoming: '將匯入',
+                import_counts: '數量',
+                import_types: '類型',
+                import_settings: '設定',
+                import_invalid: '備份檔案格式不正確。',
+                import_autobackup: '已下載自動備份：',
+                import_overwrite: '備份並覆蓋',
                 units: '單位', currency: '貨幣', language: '語言',
                 metric: '公制 (L, km)', imperial: '英制 (Gal, mi)',
                 success_import: '資料匯入成功！', err_file: '文件格式錯誤',
@@ -944,6 +964,70 @@ END:VCALENDAR`;
                 a.href = url;
                 a.download = `fuelmate_reminder_${dateStr}.ics`;
                 a.click();
+            },
+            formatFileSize(bytes) {
+                const b = Number(bytes) || 0;
+                if (b < 1024) return `${b} B`;
+                if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+                return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+            },
+            summarizeImportData(data) {
+                const vehicles = Array.isArray(data?.vehicles) ? data.vehicles : [];
+                const logs = Array.isArray(data?.logs) ? data.logs : [];
+                const typeCounts = logs.reduce((acc, l) => {
+                    const t = l?.type || 'unknown';
+                    acc[t] = (acc[t] || 0) + 1;
+                    return acc;
+                }, {});
+                const settings = data?.settings || {};
+                return {
+                    vehiclesCount: vehicles.length,
+                    logsCount: logs.length,
+                    typeCounts,
+                    settings: {
+                        units: settings.units,
+                        currency: settings.currency,
+                        language: settings.language
+                    }
+                };
+            },
+            validateImportData(data) {
+                const errors = [];
+                const warnings = [];
+                if (!data || typeof data !== 'object') errors.push('root_not_object');
+
+                const vehicles = Array.isArray(data?.vehicles) ? data.vehicles : null;
+                const logs = Array.isArray(data?.logs) ? data.logs : null;
+                const settings = data?.settings;
+
+                if (!vehicles) errors.push('vehicles_not_array');
+                if (!logs) errors.push('logs_not_array');
+                if (settings !== undefined && (settings === null || typeof settings !== 'object')) errors.push('settings_not_object');
+
+                if (vehicles) {
+                    const ids = new Set();
+                    for (const v of vehicles) {
+                        if (!v || typeof v !== 'object') { errors.push('vehicle_not_object'); break; }
+                        if (!v.id) { errors.push('vehicle_missing_id'); break; }
+                        ids.add(String(v.id));
+                    }
+                    if (logs) {
+                        let orphan = 0;
+                        for (const l of logs) {
+                            if (!l || typeof l !== 'object') { errors.push('log_not_object'); break; }
+                            if (!l.id || !l.vehicleId || !l.type || !l.date) { errors.push('log_missing_fields'); break; }
+                            if (!ids.has(String(l.vehicleId))) orphan++;
+                        }
+                        if (orphan > 0) warnings.push({ code: 'orphan_logs', count: orphan });
+                    }
+                }
+
+                return {
+                    ok: errors.length === 0,
+                    errors,
+                    warnings,
+                    summary: utils.summarizeImportData(data)
+                };
             },
 
             getCarColorClass(color) {
@@ -2553,6 +2637,18 @@ END:VCALENDAR`;
                 store.saveData().then(() => this.render());
             },
 
+            downloadBackup(filenamePrefix = 'fuelmate_backup') {
+                const json = JSON.stringify(store.data);
+                const blob = new Blob([json], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const ts = new Date().toISOString().replace(/[:]/g, '').slice(0, 15);
+                a.download = `${filenamePrefix}_${ts}.json`;
+                a.click();
+                return a.download;
+            },
+
             exportData() {
                 const json = JSON.stringify(store.data);
                 const blob = new Blob([json], {type: 'application/json'});
@@ -2574,21 +2670,96 @@ END:VCALENDAR`;
                 const file = input.files[0];
                 if (!file) return;
                 
-                setTimeout(() => {
-                    if (confirm(utils.t('import_warn'))) {
-                        const reader = new FileReader();
-                        reader.onload = async (e) => {
+                const fileName = file.name || 'backup.json';
+                const fileSize = file.size || 0;
+
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        const validation = utils.validateImportData(data);
+                        if (!validation.ok) {
+                            alert(utils.t('import_invalid'));
+                            input.value = '';
+                            return;
+                        }
+
+                        const currentSummary = utils.summarizeImportData(store.data);
+                        const incomingSummary = validation.summary;
+                        const topTypes = (counts) => Object.entries(counts)
+                            .sort((a,b) => b[1]-a[1])
+                            .slice(0, 6)
+                            .map(([k,v]) => `${k}: ${v}`)
+                            .join(', ');
+
+                        const warningText = validation.warnings?.some(w => w.code === 'orphan_logs')
+                            ? `<div class="text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">${utils.t('import_warn')} (${validation.warnings.find(w=>w.code==='orphan_logs').count} orphan logs)</div>`
+                            : `<div class="text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">${utils.t('import_warn')}</div>`;
+
+                        ui.openModal(`
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-xl font-bold theme-text-heading">${utils.t('import_summary')}</h2>
+                                    <button onclick="ui.closeModal()" class="text-slate-400"><span class="material-icons">close</span></button>
+                                </div>
+
+                                ${warningText}
+
+                                <div class="theme-bg-card p-4 rounded-2xl border theme-border">
+                                    <div class="text-xs theme-text-sub uppercase tracking-wider mb-2">${utils.t('import_file')}</div>
+                                    <div class="font-bold theme-text-heading">${fileName}</div>
+                                    <div class="text-xs theme-text-sub">${utils.formatFileSize(fileSize)}</div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="theme-bg-card p-4 rounded-2xl border theme-border">
+                                        <div class="text-xs theme-text-sub uppercase tracking-wider mb-2">${utils.t('import_current')}</div>
+                                        <div class="text-sm font-bold theme-text-heading">${utils.t('import_counts')}: ${currentSummary.vehiclesCount} / ${currentSummary.logsCount}</div>
+                                        <div class="text-xs theme-text-sub mt-1">${utils.t('import_types')}: ${topTypes(currentSummary.typeCounts) || '--'}</div>
+                                    </div>
+                                    <div class="theme-bg-card p-4 rounded-2xl border theme-border">
+                                        <div class="text-xs theme-text-sub uppercase tracking-wider mb-2">${utils.t('import_incoming')}</div>
+                                        <div class="text-sm font-bold theme-text-heading">${utils.t('import_counts')}: ${incomingSummary.vehiclesCount} / ${incomingSummary.logsCount}</div>
+                                        <div class="text-xs theme-text-sub mt-1">${utils.t('import_types')}: ${topTypes(incomingSummary.typeCounts) || '--'}</div>
+                                    </div>
+                                </div>
+
+                                <div class="theme-bg-card p-4 rounded-2xl border theme-border">
+                                    <div class="text-xs theme-text-sub uppercase tracking-wider mb-2">${utils.t('import_settings')}</div>
+                                    <div class="text-xs theme-text-sub">
+                                        units: ${incomingSummary.settings.units || '--'} • currency: ${incomingSummary.settings.currency || '--'} • language: ${incomingSummary.settings.language || '--'}
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-3">
+                                    <button onclick="ui.closeModal()" class="flex-1 bg-slate-100 dark:bg-slate-800 theme-text-heading py-3 rounded-xl font-bold">${utils.t('cancel')}</button>
+                                    <button id="confirm_import_btn" class="flex-1 grad-teal text-white py-3 rounded-xl font-bold shadow-lg">${utils.t('import_overwrite')}</button>
+                                </div>
+                            </div>
+                        `);
+
+                        document.getElementById('confirm_import_btn').onclick = async () => {
                             try {
-                                const data = JSON.parse(e.target.result);
+                                const backupName = ui.downloadBackup('fuelmate_autobackup');
+                                store.data.settings.lastBackupDate = new Date().toISOString();
+                                await store.saveData();
+
                                 await store.importData(data, { overwrite: true });
-                                alert(utils.t('success_import'));
+                                alert(`${utils.t('import_autobackup')} ${backupName}\n${utils.t('success_import')}`);
                                 location.reload();
-                            } catch (err) { alert(utils.t('err_file')); }
+                            } catch (err) {
+                                console.error(err);
+                                alert(utils.t('err_file'));
+                            }
                         };
-                        reader.readAsText(file);
+                    } catch (err) {
+                        console.error(err);
+                        alert(utils.t('err_file'));
+                    } finally {
+                        input.value = '';
                     }
-                    input.value = ''; // reset
-                }, 50);
+                };
+                reader.readAsText(file);
             },
             
             openVehicleSelector() {
