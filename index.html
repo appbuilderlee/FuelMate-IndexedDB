@@ -1383,6 +1383,9 @@ END:VCALENDAR`;
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
+                                        <button onclick="router.navigate('reminders')" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/30 transition text-white">
+                                            <span class="material-icons text-lg">notifications</span>
+                                        </button>
                                         <button onclick="ui.openCalendarSelector()" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/30 transition text-white">
                                             <span class="material-icons text-lg">event</span>
                                         </button>
@@ -2277,7 +2280,6 @@ END:VCALENDAR`;
                     { id: 'parking', icon: 'local_parking', label: utils.t('parking') },
                     { id: 'maintenance', icon: 'build', label: 'Service+' },
                     { id: 'analytics', icon: 'pie_chart', label: utils.t('analytics') },
-                    { id: 'reminders', icon: 'notifications', label: utils.t('reminders') },
                     { id: 'settings', icon: 'settings', label: utils.t('settings') }
                 ];
                 return `
