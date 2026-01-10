@@ -1940,7 +1940,8 @@ END:VCALENDAR`;
                 `;
             },
 
-            getReminderData(vehicle) {
+            getReminderData(vehicle, options = {}) {
+                const includeAll = !!options.includeAll;
                 if (!vehicle) {
                     return { items: [], activeItems: [], snoozedItems: [], doneItems: [], snoozedUntil: {}, done: {} };
                 }
@@ -1959,12 +1960,13 @@ END:VCALENDAR`;
                 })();
                 const tireThresholdDays = 60;
                 let hasTireReminder = false;
-                for (const s of utils.getTireReplacementStatus(vehicle)) {
+                const tireStatuses = utils.getTireReplacementStatus(vehicle);
+                for (const s of tireStatuses) {
                     const near =
                         s.isOverdue ||
                         (s.remainingKm !== null && s.remainingKm <= tireThresholdKm) ||
                         (s.remainingDays !== null && s.remainingDays <= tireThresholdDays);
-                    if (!near) continue;
+                    if (!includeAll && !near) continue;
                     hasTireReminder = true;
                     const id = `tire:${vehicle.id}:${s.pos}:${s.editLogId || 'none'}`;
                     items.push({
@@ -1980,13 +1982,12 @@ END:VCALENDAR`;
                     });
                 }
                 if (!hasTireReminder) {
-                    const statuses = utils.getTireReplacementStatus(vehicle);
-                    const byDays = statuses.filter(s => !s.isNotSet && s.remainingDays !== null);
-                    const byKm = statuses.filter(s => !s.isNotSet && s.remainingKm !== null);
+                    const byDays = tireStatuses.filter(s => !s.isNotSet && s.remainingDays !== null);
+                    const byKm = tireStatuses.filter(s => !s.isNotSet && s.remainingKm !== null);
                     const candidate = byDays.length
                         ? byDays.sort((a, b) => (a.remainingDays || 0) - (b.remainingDays || 0))[0]
                         : (byKm.length ? byKm.sort((a, b) => (a.remainingKm || 0) - (b.remainingKm || 0))[0] : null);
-                    const fallbackUnset = statuses.find(s => s.isNotSet);
+                    const fallbackUnset = tireStatuses.find(s => s.isNotSet);
                     const picked = candidate || fallbackUnset;
                     if (picked) {
                         const id = `tire:${vehicle.id}:next:${picked.pos || 'unset'}`;
@@ -2012,7 +2013,7 @@ END:VCALENDAR`;
                     const latest = store.getVehicleLogs(type)[0];
                     if (!latest || !latest.expiryDate) return;
                     const days = Math.ceil((new Date(latest.expiryDate) - now) / 86400000);
-                    if (days > (setting?.days || 30)) return;
+                    if (!includeAll && days > (setting?.days || 30)) return;
                     const id = `doc:${vehicle.id}:${type}:${latest.expiryDate}`;
                     items.push({
                         id,
@@ -2036,7 +2037,7 @@ END:VCALENDAR`;
                 if (distInt > 0) {
                     const nextOdo = lastOdo + distInt;
                     const remaining = nextOdo - (parseFloat(vehicle.currentOdometer) || 0);
-                    if (remaining <= 500) {
+                    if (includeAll || remaining <= 500) {
                         const id = `svc:${vehicle.id}:dist:${nextOdo}`;
                         items.push({
                             id,
@@ -2052,7 +2053,7 @@ END:VCALENDAR`;
                     const nextDate = new Date(lastDate);
                     nextDate.setMonth(nextDate.getMonth() + timeInt);
                     const remainingDays = Math.ceil((nextDate - now) / 86400000);
-                    if (remainingDays <= 30) {
+                    if (includeAll || remainingDays <= 30) {
                         const id = `svc:${vehicle.id}:time:${nextDate.toISOString().slice(0,10)}`;
                         items.push({
                             id,
@@ -2105,12 +2106,18 @@ END:VCALENDAR`;
             },
 
             renderReminders(vehicle) {
-                const { activeItems, snoozedItems, doneItems, snoozedUntil, done } = this.getReminderData(vehicle);
+                const { activeItems, snoozedItems, doneItems, snoozedUntil, done } = this.getReminderData(vehicle, { includeAll: true });
                 const tab = store.pageFilters.remindersTab || 'active';
+                const sortByDue = (list) => list.slice().sort((a, b) => {
+                    const aTime = a.dueDateIso ? new Date(a.dueDateIso).getTime() : Number.POSITIVE_INFINITY;
+                    const bTime = b.dueDateIso ? new Date(b.dueDateIso).getTime() : Number.POSITIVE_INFINITY;
+                    if (aTime !== bTime) return aTime - bTime;
+                    return (a.title || '').localeCompare(b.title || '');
+                });
                 const visible =
-                    tab === 'snoozed' ? snoozedItems :
-                    tab === 'done' ? doneItems :
-                    activeItems;
+                    tab === 'snoozed' ? sortByDue(snoozedItems) :
+                    tab === 'done' ? sortByDue(doneItems) :
+                    sortByDue(activeItems);
 
                 return `
                     <div class="px-6 pt-safe min-h-screen pb-24">
