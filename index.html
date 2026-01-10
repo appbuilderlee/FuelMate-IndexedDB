@@ -1153,7 +1153,7 @@
                 const sorted = odoLogs.sort((a, b) => parseFloat(a.odometer) - parseFloat(b.odometer));
                 const totalDist = sorted.length > 1
                     ? (parseFloat(sorted[sorted.length-1].odometer) - parseFloat(sorted[0].odometer))
-                    : 0;
+                    : (sorted.length === 1 ? (parseFloat(sorted[0].odometer) || 0) : 0);
 
                 // 3. Fuel Efficiency (Always calc if fuel data exists)
                 let efficiency = '--';
@@ -1887,7 +1887,7 @@ END:VCALENDAR`;
                                 </div>
                                 <div class="theme-bg-card p-4 rounded-2xl card-shadow">
                                     <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.t('total_dist')}</div>
-                                    <div class="text-xl font-black theme-text-heading">${stats.totalDist.toLocaleString()}</div>
+                                    <div class="text-xl font-black theme-text-heading">${Number.isFinite(stats.totalDist) ? stats.totalDist.toLocaleString() : '--'}</div>
                                     <div class="text-[10px] theme-text-sub">${utils.getDistUnit()}</div>
                                 </div>
                             </div>
@@ -2222,7 +2222,7 @@ END:VCALENDAR`;
                             </div>
                              <div class="theme-bg-card p-3 rounded-xl card-shadow">
                                 <div class="text-[10px] theme-text-sub uppercase tracking-wider">${utils.t('total_dist')}</div>
-                                <div class="text-lg font-bold theme-text-heading">${stats.totalDist} <span class="text-[10px] font-normal">${utils.getDistUnit()}</span></div>
+                                <div class="text-lg font-bold theme-text-heading">${Number.isFinite(stats.totalDist) ? stats.totalDist : '--'} <span class="text-[10px] font-normal">${utils.getDistUnit()}</span></div>
                             </div>
                         </div>
 
