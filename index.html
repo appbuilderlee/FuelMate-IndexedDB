@@ -2045,6 +2045,7 @@ END:VCALENDAR`;
                             title: utils.t('due_service'),
                             meta: remaining <= 0 ? utils.t('overdue') : `${utils.t('due_in')} ${Math.max(0, Math.round(remaining)).toLocaleString()} ${utils.getDistUnit()}`,
                             dueDateIso: null,
+                            remainingKm: remaining,
                             editAction: `ui.openAddService(null,'periodic_maintenance')`
                         });
                     }
@@ -2061,10 +2062,41 @@ END:VCALENDAR`;
                             title: utils.t('due_service'),
                             meta: remainingDays <= 0 ? utils.t('overdue') : `${utils.t('due_in')} ${utils.formatDaysShort(remainingDays)}`,
                             dueDateIso: nextDate.toISOString(),
+                            remainingDays,
                             calendarTitle: `${utils.t('due_service')}: ${vehicle.make} ${vehicle.model}`,
                             editAction: `ui.openAddService(null,'periodic_maintenance')`,
                             calendarAction: `utils.exportDateCalendar('${utils.t('due_service')}: ${vehicle.make} ${vehicle.model}', '${nextDate.toISOString()}', 0)`
                         });
+                    }
+                }
+
+                if (distInt > 0 && timeInt > 0 && items.length) {
+                    const distIndex = items.findIndex(i => i.id.startsWith(`svc:${vehicle.id}:dist:`));
+                    const timeIndex = items.findIndex(i => i.id.startsWith(`svc:${vehicle.id}:time:`));
+                    if (distIndex !== -1 && timeIndex !== -1) {
+                        const distItem = items[distIndex];
+                        const timeItem = items[timeIndex];
+                        const mergedMeta = [distItem.meta, timeItem.meta].filter(Boolean).join(' • ');
+                        const pickTime = (() => {
+                            if (Number.isFinite(timeItem.remainingDays) && Number.isFinite(distItem.remainingKm)) {
+                                const timeCloser = timeItem.remainingDays <= 30;
+                                const distCloser = distItem.remainingKm <= 500;
+                                if (timeCloser !== distCloser) return timeCloser;
+                                return timeItem.remainingDays <= distItem.remainingKm;
+                            }
+                            if (Number.isFinite(timeItem.remainingDays)) return true;
+                            if (Number.isFinite(distItem.remainingKm)) return false;
+                            return true;
+                        })();
+                        const mergedDue = pickTime ? timeItem.dueDateIso : distItem.dueDateIso;
+                        items[distIndex] = {
+                            ...distItem,
+                            meta: mergedMeta,
+                            dueDateIso: mergedDue,
+                            calendarTitle: timeItem.calendarTitle || distItem.calendarTitle,
+                            calendarAction: timeItem.calendarAction || distItem.calendarAction
+                        };
+                        items.splice(timeIndex, 1);
                     }
                 }
 
