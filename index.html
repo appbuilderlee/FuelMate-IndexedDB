@@ -68,6 +68,88 @@
         @media (prefers-color-scheme: dark) {
             .glass-nav { background: rgba(30, 41, 59, 0.9); border-top: 1px solid #334155; }
         }
+        .liquid-nav {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(18px) saturate(1.4);
+            box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.12);
+        }
+        .liquid-nav-bg {
+            position: absolute;
+            inset: -40px;
+            background:
+                radial-gradient(120px 80px at 10% 20%, rgba(20, 184, 166, 0.35), transparent 60%),
+                radial-gradient(140px 90px at 90% 30%, rgba(59, 130, 246, 0.25), transparent 60%),
+                radial-gradient(180px 120px at 50% 120%, rgba(16, 185, 129, 0.25), transparent 70%);
+            filter: blur(6px);
+            animation: liquid-drift 8s ease-in-out infinite alternate, liquid-float 12s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .liquid-nav-gloss {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0.35) 70%);
+            opacity: 0.6;
+            animation: liquid-shimmer 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .liquid-nav-inner { position: relative; z-index: 1; }
+        .liquid-nav-highlight {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            height: 62px;
+            width: calc(100% / var(--nav-count));
+            transform: translate3d(calc(var(--active-index) * 100%), -50%, 0);
+            border-radius: 18px;
+            background: radial-gradient(80px 40px at 50% 0%, rgba(20, 184, 166, 0.35), transparent 70%);
+            box-shadow: 0 6px 14px rgba(15, 118, 110, 0.18);
+            transition: transform 0.35s ease;
+            z-index: 0;
+        }
+        .liquid-nav-item { position: relative; z-index: 1; transition: transform 0.2s ease, color 0.2s ease; }
+        .liquid-nav-item:hover { transform: translateY(-2px); }
+        .liquid-nav-item:active { transform: translateY(-1px) scale(0.98); }
+        .liquid-nav-item.is-active .material-icons { text-shadow: 0 0 12px rgba(20, 184, 166, 0.35); }
+        @keyframes liquid-drift {
+            0% { transform: translate3d(-4%, -2%, 0) scale(1); }
+            100% { transform: translate3d(4%, 2%, 0) scale(1.05); }
+        }
+        @keyframes liquid-float {
+            0% { filter: blur(6px); }
+            50% { filter: blur(10px); }
+            100% { filter: blur(6px); }
+        }
+        @keyframes liquid-shimmer {
+            0% { transform: translateX(-15%); opacity: 0.35; }
+            50% { transform: translateX(10%); opacity: 0.55; }
+            100% { transform: translateX(20%); opacity: 0.4; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .liquid-nav {
+                background: rgba(15, 23, 42, 0.65);
+                border-top: 1px solid rgba(148, 163, 184, 0.25);
+                box-shadow: 0 -10px 30px rgba(2, 6, 23, 0.6);
+            }
+            .liquid-nav-bg {
+                background:
+                    radial-gradient(120px 80px at 10% 20%, rgba(94, 234, 212, 0.2), transparent 60%),
+                    radial-gradient(140px 90px at 90% 30%, rgba(56, 189, 248, 0.2), transparent 60%),
+                    radial-gradient(180px 120px at 50% 120%, rgba(34, 197, 94, 0.18), transparent 70%);
+                opacity: 0.8;
+            }
+            .liquid-nav-gloss { opacity: 0.25; }
+            .liquid-nav-highlight {
+                background: radial-gradient(80px 40px at 50% 0%, rgba(94, 234, 212, 0.25), transparent 70%);
+                box-shadow: 0 6px 16px rgba(45, 212, 191, 0.15);
+            }
+            .liquid-nav-item.is-active .material-icons { text-shadow: 0 0 12px rgba(94, 234, 212, 0.25); }
+        }
         /* Hide scrollbar but allow scroll */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -135,11 +217,11 @@
         // --- TRANSLATIONS ---
         const translations = {
             en: {
-                dashboard: 'Dashboard', fuel: 'Fuel', maintenance: 'Maintenance', analytics: 'Analytics', settings: 'Settings', parking: 'Park',
+                dashboard: 'Dashboard', fuel: 'Fuel', maintenance: 'Vehicle Records', maintenance_plus: 'Records+', analytics: 'Analytics', settings: 'Settings', parking: 'Park',
                 welcome: 'Welcome', add_vehicle: 'Add Vehicle', select_vehicle: 'Select Vehicle',
                 range_month: 'Month', range_year: 'Year', range_all: 'All Time',
                 efficiency: 'Efficiency', cost_km: 'Cost/km', total_cost: 'Total Cost', total_dist: 'Total Distance',
-                add_fuel: 'Add Fuel', add_service: 'Add Service', add_parking: 'Add Parking', edit_vehicle: 'Edit Vehicle',
+                add_fuel: 'Add Fuel', add_service: 'Add Vehicle Record', add_parking: 'Add Parking', edit_vehicle: 'Edit Vehicle',
                 date: 'Date', odometer: 'Odometer', liters: 'Liters', gallons: 'Gallons', cost: 'Cost', price_unit: 'Price/Unit', location: 'Location', notes: 'Notes',
                 detect_loc: 'Detect Location', save: 'Save', cancel: 'Cancel', delete: 'Delete',
                 service_type: 'Service Type', service: 'Service', repair: 'Repair', parking_fee: 'Parking Fee', traffic_fine: 'Traffic Fine',
@@ -201,6 +283,12 @@
                 install_guide_hint: 'Add FuelMate to your home screen for the best experience.',
                 view_details: 'View Details',
                 backup_warning: 'Please back up regularly; clearing browser cache can remove local data.',
+                all: 'All',
+                maintenance_cost: 'Maintenance Cost',
+                no_records_found: 'No records found',
+                no_tire_records_found: 'No tire records found',
+                no_tire_events: 'No tire events',
+                no_records_yet: 'No records yet',
                 view_all: 'View All',
                 snooze_7d: 'Snooze 7d',
                 snooze_1d: 'Snooze 1d',
@@ -257,11 +345,11 @@
                 kwh: 'kWh'
             },
             zh: {
-                dashboard: '首頁', fuel: '加油', maintenance: '維修', analytics: '統計', settings: '設定', parking: '停車',
+                dashboard: '首頁', fuel: '加油', maintenance: '車務紀錄', maintenance_plus: '車務+', analytics: '統計', settings: '設定', parking: '停車',
                 welcome: '歡迎使用', add_vehicle: '新增車輛', select_vehicle: '切換車輛',
                 range_month: '月份', range_year: '年份', range_all: '全部',
                 efficiency: '油耗表現', cost_km: '每公里成本', total_cost: '總支出', total_dist: '總里程',
-                add_fuel: '新增加油', add_service: '新增維修', add_parking: '新增停車', edit_vehicle: '編輯車輛',
+                add_fuel: '新增加油', add_service: '新增車務', add_parking: '新增停車', edit_vehicle: '編輯車輛',
                 date: '日期', odometer: '里程', liters: '升數', gallons: '加侖', cost: '金額', price_unit: '單價', location: '地點', notes: '備註',
                 detect_loc: '定位', save: '保存', cancel: '取消', delete: '刪除',
                 service_type: '維修類型', service: '一般維修', repair: '故障維修', parking_fee: '停車費', traffic_fine: '罰單/告票',
@@ -323,6 +411,12 @@
                 install_guide_hint: '將 FuelMate 加到主畫面，離線也可快速開啟。',
                 view_details: '詳細教學',
                 backup_warning: '提示：請定期備份；清除瀏覽器快取會刪除本機資料。',
+                all: '全部',
+                maintenance_cost: '車務總額',
+                no_records_found: '沒有任何紀錄',
+                no_tire_records_found: '沒有輪胎紀錄',
+                no_tire_events: '沒有輪胎事件',
+                no_records_yet: '尚未有紀錄',
                 view_all: '查看全部',
                 snooze_7d: '延後 7 天',
                 snooze_1d: '延後 1 天',
@@ -1828,7 +1922,7 @@ END:VCALENDAR`;
                             <div class="px-6">
                                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">Recent Activity</div>
                                 <div class="space-y-3 pb-24">
-                                    ${logs.length ? logs.slice(0, 5).map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-8 italic text-sm">No records yet</div>`}
+                                    ${logs.length ? logs.slice(0, 5).map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-8 italic text-sm">${utils.t('no_records_yet')}</div>`}
                                 </div>
                             </div>
                         </div>
@@ -2173,7 +2267,7 @@ END:VCALENDAR`;
                 return `
                     <div class="px-6 pt-safe min-h-screen">
                         <div class="flex justify-between items-center mb-2">
-                             <h1 class="text-3xl font-black theme-text-heading">維修保養</h1>
+                             <h1 class="text-3xl font-black theme-text-heading">${utils.t('maintenance')}</h1>
                         </div>
                         <div class="mb-4">${this.renderFilterHeader('maintenance', filter)}</div>
                         
@@ -2190,13 +2284,13 @@ END:VCALENDAR`;
                         })}
 
                         <div class="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 mb-3">
-                            <button onclick="store.pageFilters.maintenanceView='all'; store.pageFilters.maintenanceTypes=[]; ui.resetPageLimit('maintenance'); ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='all'?'bg-white dark:bg-slate-700 shadow':''}">All</button>
+                            <button onclick="store.pageFilters.maintenanceView='all'; store.pageFilters.maintenanceTypes=[]; ui.resetPageLimit('maintenance'); ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='all'?'bg-white dark:bg-slate-700 shadow':''}">${utils.t('all')}</button>
                             <button onclick="store.pageFilters.maintenanceView='tires'; ui.resetPageLimit('maintenance'); ui.render()" class="flex-1 py-2 text-xs font-bold rounded-lg ${view==='tires'?'bg-white dark:bg-slate-700 shadow':''}">${utils.t('tire_replace')}</button>
                         </div>
 
                         ${view === 'all' ? `
                             <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 mb-4">
-                                <button onclick="store.pageFilters.maintenanceTypes=[]; ui.resetPageLimit('maintenance'); ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${selectedTypes.length ? 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub' : 'bg-teal-600 text-white border-teal-600'}">All</button>
+                                <button onclick="store.pageFilters.maintenanceTypes=[]; ui.resetPageLimit('maintenance'); ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${selectedTypes.length ? 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub' : 'bg-teal-600 text-white border-teal-600'}">${utils.t('all')}</button>
                                 ${['service','repair','tire_replace','tire_rotation','periodic_maintenance','car_wash','car_accessories','fine','license','insurance','registration'].map(t => {
                                     const active = selectedTypes.includes(t);
                                     return `<button onclick="const s=store.pageFilters.maintenanceTypes||[]; store.pageFilters.maintenanceTypes = s.includes('${t}') ? s.filter(x=>x!=='${t}') : [...s,'${t}']; ui.resetPageLimit('maintenance'); ui.render()" class="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border ${active ? 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-900/20' : 'bg-slate-50 dark:bg-slate-800 theme-border theme-text-sub'}">${utils.t(t)}</button>`;
@@ -2206,7 +2300,7 @@ END:VCALENDAR`;
 
                         <div class="theme-bg-card p-4 rounded-2xl card-shadow mb-6 flex justify-between items-center">
                             <div>
-                                <div class="text-xs theme-text-sub uppercase tracking-wider">Maintenance Cost</div>
+                                <div class="text-xs theme-text-sub uppercase tracking-wider">${utils.t('maintenance_cost')}</div>
                                 <div class="text-2xl font-black theme-text-heading">${utils.formatCurrency(stats.totalCost)}</div>
                             </div>
                             <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
@@ -2264,12 +2358,12 @@ END:VCALENDAR`;
                                                         </div>
                                                         <div class="theme-text-sub">${ev.odometer} ${utils.getDistUnit()}</div>
                                                     </div>`;
-                                                }).join('') || `<div class="text-center theme-text-sub text-sm py-3">No tire events</div>`}
+                                                }).join('') || `<div class="text-center theme-text-sub text-sm py-3">${utils.t('no_tire_events')}</div>`}
                                             </div>
                                         </div>
                                     `).join('')
-                                    : `<div class="text-center theme-text-sub py-12">No tire records found</div>`)
-                                : (visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records found</div>`)}
+                                    : `<div class="text-center theme-text-sub py-12">${utils.t('no_tire_records_found')}</div>`)
+                                : (visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">${utils.t('no_records_found')}</div>`)}
                             ${view === 'all' && filteredLogs.length > visibleLogs.length ? ui.renderLoadMore('maintenance', visibleLogs.length, filteredLogs.length) : ''}
                         </div>
                         <button onclick="ui.openAddService()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-white dark:bg-slate-700 theme-text-heading shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50 border theme-border">
@@ -2330,7 +2424,7 @@ END:VCALENDAR`;
                         </div>
                         
                         <div class="space-y-3 pb-24">
-                            ${visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">No records yet</div>`}
+                            ${visibleLogs.length ? visibleLogs.map(l => this.renderLogCard(l)).join('') : `<div class="text-center theme-text-sub py-12">${utils.t('no_records_yet')}</div>`}
                             ${filteredLogs.length > visibleLogs.length ? ui.renderLoadMore('parking', visibleLogs.length, filteredLogs.length) : ''}
                         </div>
                         <button onclick="ui.openAddParking()" class="fixed bottom-[calc(130px+var(--safe-bottom))] right-6 w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center active:scale-90 transition-transform z-50">
@@ -2815,17 +2909,21 @@ END:VCALENDAR`;
                     { id: 'dashboard', icon: 'dashboard', label: utils.t('dashboard') },
                     { id: 'fuel', icon: 'local_gas_station', label: utils.t('fuel') },
                     { id: 'parking', icon: 'local_parking', label: utils.t('parking') },
-                    { id: 'maintenance', icon: 'build', label: 'Service+' },
+                    { id: 'maintenance', icon: 'build', label: utils.t('maintenance_plus') },
                     { id: 'analytics', icon: 'pie_chart', label: utils.t('analytics') },
                     { id: 'settings', icon: 'settings', label: utils.t('settings') }
                 ];
+                const activeIndex = Math.max(0, nav.findIndex(n => n.id === active));
                 return `
-                    <div class="fixed bottom-0 left-0 w-full glass-nav nav-safe z-40">
-                        <div class="flex justify-around items-center pt-2">
+                    <div class="liquid-nav nav-safe z-40" style="--active-index:${activeIndex}; --nav-count:${nav.length};">
+                        <div class="liquid-nav-bg"></div>
+                        <div class="liquid-nav-gloss"></div>
+                        <div class="liquid-nav-inner flex justify-around items-center pt-2">
+                            <div class="liquid-nav-highlight"></div>
                             ${nav.map(n => `
-                                <button onclick="router.navigate('${n.id}')" class="flex flex-col items-center p-2 w-full transition-colors ${active === n.id ? 'text-teal-600' : 'text-slate-400'}">
+                                <button onclick="router.navigate('${n.id}')" class="liquid-nav-item flex flex-col items-center p-2 w-full transition-colors ${active === n.id ? 'text-teal-700 is-active' : 'text-slate-500'}">
                                     <span class="material-icons ${active === n.id ? 'text-2xl' : 'text-xl'}">${n.icon}</span>
-                                    <span class="text-[10px] font-medium mt-1">${n.label}</span>
+                                    <span class="text-[10px] font-semibold mt-1">${n.label}</span>
                                 </button>
                             `).join('')}
                         </div>
