@@ -1217,24 +1217,31 @@
                 if (fuelLogs.length < 2) return '';
                 const v = store.getActiveVehicle();
                 const isImperial = store.data.settings.units === 'imperial';
-                const isEV = v && v.fuelUnit === 'kWh';
                 const distUnit = utils.getDistUnit();
                 const fuelUnit = v && v.fuelUnit ? v.fuelUnit : (isImperial ? 'Gal' : 'L');
                 
-                const dataPoints = [];
+                const monthly = new Map();
                 for (let i = 0; i < fuelLogs.length - 1; i++) {
-                     const dist = fuelLogs[i+1].odometer - fuelLogs[i].odometer;
-                     if (dist > 0) {
-                         const fuel = parseFloat(fuelLogs[i+1].liters) || 0;
-                         if (fuel > 0) {
-                             const eff = utils.calcEfficiencyValue(fuel, dist, fuelUnit, distUnit);
-                             const month = fuelLogs[i+1].date ? fuelLogs[i+1].date.slice(5, 7) : '';
-                             dataPoints.push({ val: eff, month });
-                         }
-                     }
+                    const dist = fuelLogs[i+1].odometer - fuelLogs[i].odometer;
+                    if (dist <= 0) continue;
+                    const fuel = parseFloat(fuelLogs[i+1].liters) || 0;
+                    if (fuel <= 0) continue;
+                    const ym = fuelLogs[i+1].date ? fuelLogs[i+1].date.slice(0, 7) : '';
+                    if (!ym) continue;
+                    const cur = monthly.get(ym) || { fuel: 0, dist: 0 };
+                    cur.fuel += fuel;
+                    cur.dist += dist;
+                    monthly.set(ym, cur);
                 }
-                if (dataPoints.length < 2) return '';
-                const recentPoints = dataPoints.slice(-12); 
+                const recentPoints = Array.from(monthly.entries())
+                    .sort((a, b) => a[0].localeCompare(b[0]))
+                    .slice(-12)
+                    .map(([ym, v]) => ({
+                        val: utils.calcEfficiencyValue(v.fuel, v.dist, fuelUnit, distUnit),
+                        month: ym.slice(5, 7)
+                    }))
+                    .filter(p => p.val !== null);
+                if (recentPoints.length < 1) return '';
 
                 const w = 300, h = 120; 
                 const max = Math.max(...recentPoints.map(p => p.val)) * 1.1;
