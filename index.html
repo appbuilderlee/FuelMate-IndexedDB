@@ -1149,8 +1149,11 @@
                 }, 0);
                 
                 // 2. Total Distance
-                const sorted = [...logs].sort((a, b) => parseFloat(a.odometer) - parseFloat(b.odometer));
-                const totalDist = sorted.length > 1 ? sorted[sorted.length-1].odometer - sorted[0].odometer : 0;
+                const odoLogs = logs.filter(l => Number.isFinite(parseFloat(l.odometer)));
+                const sorted = odoLogs.sort((a, b) => parseFloat(a.odometer) - parseFloat(b.odometer));
+                const totalDist = sorted.length > 1
+                    ? (parseFloat(sorted[sorted.length-1].odometer) - parseFloat(sorted[0].odometer))
+                    : 0;
 
                 // 3. Fuel Efficiency (Always calc if fuel data exists)
                 let efficiency = '--';
