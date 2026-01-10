@@ -1140,7 +1140,7 @@
             },
 
             calculateStats(logs, category = 'all') {
-                if (!logs.length) return { efficiency: '--', costKm: '--', totalCost: 0, totalDist: 0 };
+                if (!logs.length) return { efficiency: '--', costKm: '--', totalCost: 0, totalDist: 0, totalDistCount: 0 };
                 
                 // 1. Total Cost
                 const totalCost = logs.reduce((sum, l) => {
@@ -1198,7 +1198,7 @@
                     costKm = (totalCost / totalDist).toFixed(2);
                 }
 
-                return { efficiency, costKm, totalCost, totalDist };
+                return { efficiency, costKm, totalCost, totalDist, totalDistCount: sorted.length };
             },
             
             detectLocation(callback) {
@@ -1887,7 +1887,7 @@ END:VCALENDAR`;
                                 </div>
                                 <div class="theme-bg-card p-4 rounded-2xl card-shadow">
                                     <div class="theme-text-sub text-[10px] font-bold uppercase tracking-wider mb-1">${utils.t('total_dist')}</div>
-                                    <div class="text-xl font-black theme-text-heading">${Number.isFinite(stats.totalDist) ? stats.totalDist.toLocaleString() : '--'}</div>
+                                    <div class="text-xl font-black theme-text-heading">${(filter.mode !== 'all' && stats.totalDistCount < 2) ? '--' : (Number.isFinite(stats.totalDist) ? stats.totalDist.toLocaleString() : '--')}</div>
                                     <div class="text-[10px] theme-text-sub">${utils.getDistUnit()}</div>
                                 </div>
                             </div>
@@ -2222,7 +2222,7 @@ END:VCALENDAR`;
                             </div>
                              <div class="theme-bg-card p-3 rounded-xl card-shadow">
                                 <div class="text-[10px] theme-text-sub uppercase tracking-wider">${utils.t('total_dist')}</div>
-                                <div class="text-lg font-bold theme-text-heading">${Number.isFinite(stats.totalDist) ? stats.totalDist : '--'} <span class="text-[10px] font-normal">${utils.getDistUnit()}</span></div>
+                                <div class="text-lg font-bold theme-text-heading">${(filter.mode !== 'all' && stats.totalDistCount < 2) ? '--' : (Number.isFinite(stats.totalDist) ? stats.totalDist : '--')} <span class="text-[10px] font-normal">${utils.getDistUnit()}</span></div>
                             </div>
                         </div>
 
