@@ -1387,7 +1387,7 @@
                 
                 const log = logs[0];
                 const expDate = log.expiryDate.replace(/-/g, ''); 
-                const title = `${utils.t(type)}: ${v.make} ${v.model}`;
+                const title = `${utils.t(type)}: ${v.year} ${v.make} ${v.model}`;
                 
                 let alarmBlock = '';
                 if (alarmDays !== null) {
@@ -1403,7 +1403,7 @@ UID:${utils.newId()}@fuelmate
 DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z
 DTSTART;VALUE=DATE:${expDate}
 SUMMARY:${title}
-DESCRIPTION:Renew ${utils.t(type)} for ${v.make} ${v.model}
+DESCRIPTION:Renew ${utils.t(type)} for ${v.year} ${v.make} ${v.model}
 ${alarmBlock}END:VEVENT
 END:VCALENDAR`;
 
@@ -1951,6 +1951,7 @@ END:VCALENDAR`;
                 const done = center.done || {};
 
                 const items = [];
+                const vehicleLabel = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
 
                 // Tires
                 const tireThresholdKm = (() => {
@@ -1975,7 +1976,7 @@ END:VCALENDAR`;
                         title: `${utils.t('next_tire_change')} • ${utils.t('tire_' + s.pos)}`,
                         meta: [s.primary, s.secondary].filter(Boolean).join(' • '),
                         dueDateIso: s.dueDateIso,
-                        calendarTitle: `${utils.t('next_tire_change')} • ${utils.t('tire_' + s.pos)}: ${vehicle.make} ${vehicle.model}`,
+                        calendarTitle: `${utils.t('next_tire_change')} • ${utils.t('tire_' + s.pos)}: ${vehicleLabel}`,
                         editAction: s.editLogId
                             ? `ui.openAddService('${s.editLogId}')`
                             : `ui.openAddService(null,'tire_replace'); setTimeout(() => { const el=document.getElementById('l_tire_pos'); if (el) el.value='${s.pos}'; }, 60);`
@@ -2022,7 +2023,7 @@ END:VCALENDAR`;
                         meta: days <= 0 ? utils.t('overdue') : `${utils.t('due_in')} ${utils.formatDaysShort(days)}`,
                         dueDateIso: new Date(latest.expiryDate).toISOString(),
                         calendarType: type,
-                        calendarTitle: `${utils.t(type)}: ${vehicle.make} ${vehicle.model}`,
+                        calendarTitle: `${utils.t(type)}: ${vehicleLabel}`,
                         editAction: `ui.openAddService('${latest.id}')`,
                         calendarAction: `utils.exportCalendar('${type}', 0)`
                     });
@@ -2063,9 +2064,9 @@ END:VCALENDAR`;
                             meta: remainingDays <= 0 ? utils.t('overdue') : `${utils.t('due_in')} ${utils.formatDaysShort(remainingDays)}`,
                             dueDateIso: nextDate.toISOString(),
                             remainingDays,
-                            calendarTitle: `${utils.t('due_service')}: ${vehicle.make} ${vehicle.model}`,
+                            calendarTitle: `${utils.t('due_service')}: ${vehicleLabel}`,
                             editAction: `ui.openAddService(null,'periodic_maintenance')`,
-                            calendarAction: `utils.exportDateCalendar('${utils.t('due_service')}: ${vehicle.make} ${vehicle.model}', '${nextDate.toISOString()}', 0)`
+                            calendarAction: `utils.exportDateCalendar('${utils.t('due_service')}: ${vehicleLabel}', '${nextDate.toISOString()}', 0)`
                         });
                     }
                 }
